@@ -1,0 +1,219 @@
+\chapter{Theoretische Grundlagen}
+\label{ch:foundations}
+
+\section{Einführung in neuronale Netzwerke}
+
+Neuronale Netzwerke bilden die fundamentale Grundlage moderner Deep Learning Ansätze und somit auch der Transformer-Architektur. Um die Komplexität und Innovation der Transformer zu verstehen, ist es essential, zunächst die historische Entwicklung und die mathematischen Grundlagen neuronaler Netzwerke zu betrachten.
+
+\subsection{Das Perceptron-Modell}
+
+Das einfachste neuronale Netzwerk ist das Perceptron, das als mathematisches Modell eines Neurons fungiert. Ein Perceptron nimmt einen Vektor von Eingaben $\mathbf{x} = (x_1, x_2, \ldots, x_n)$ entgegen und produziert eine skalare Ausgabe $y$:
+
+\begin{equation}
+y = f\left(\sum_{i=1}^{n} w_i x_i + b\right) = f(\mathbf{w}^T \mathbf{x} + b)
+\end{equation}
+
+wobei $\mathbf{w} = (w_1, w_2, \ldots, w_n)$ der Gewichtsvektor, $b$ der Bias-Term und $f$ eine Aktivierungsfunktion ist. Häufig verwendete Aktivierungsfunktionen sind:
+
+\begin{align}
+\text{Sigmoid:} \quad &\sigma(x) = \frac{1}{1 + e^{-x}} \\
+\text{ReLU:} \quad &\text{ReLU}(x) = \max(0, x) \\
+\text{Tanh:} \quad &\tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}}
+\end{align}
+
+\subsection{Mehrschichtige neuronale Netzwerke}
+
+Die Erweiterung auf mehrschichtige Netzwerke (Multi-Layer Perceptrons, MLPs) ermöglicht die Approximation komplexerer Funktionen. Ein $L$-schichtiges Netzwerk kann mathematisch beschrieben werden als:
+
+\begin{align}
+\mathbf{h}^{(0)} &= \mathbf{x} \\
+\mathbf{h}^{(l)} &= f^{(l)}\left(\mathbf{W}^{(l)} \mathbf{h}^{(l-1)} + \mathbf{b}^{(l)}\right) \quad \text{für } l = 1, 2, \ldots, L \\
+\mathbf{y} &= \mathbf{h}^{(L)}
+\end{align}
+
+wobei $\mathbf{W}^{(l)}$ die Gewichtsmatrix und $\mathbf{b}^{(l)}$ der Bias-Vektor der $l$-ten Schicht sind.
+
+\subsection{Backpropagation-Algorithmus}
+
+Das Training neuronaler Netzwerke erfolgt mittels des Backpropagation-Algorithmus, der auf der Kettenregel der Differentiation basiert. Für eine Verlustfunktion $\mathcal{L}$ werden die Gradienten bezüglich der Parameter berechnet:
+
+\begin{equation}
+\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(l)}} = \frac{\partial \mathcal{L}}{\partial \mathbf{h}^{(l)}} \frac{\partial \mathbf{h}^{(l)}}{\partial \mathbf{W}^{(l)}}
+\end{equation}
+
+Die Aktualisierung der Parameter erfolgt dann mittels Gradientenabstieg:
+
+\begin{equation}
+\mathbf{W}^{(l)} \leftarrow \mathbf{W}^{(l)} - \alpha \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(l)}}
+\end{equation}
+
+wobei $\alpha$ die Lernrate ist.
+
+\section{Sequenzmodellierung und rekurrente Netzwerke}
+
+Die Verarbeitung sequenzieller Daten stellt besondere Anforderungen an neuronale Netzwerke. Sprache ist inherent sequenziell - die Bedeutung eines Wortes hängt oft vom Kontext der vorhergehenden Wörter ab.
+
+\subsection{Recurrent Neural Networks (RNNs)}
+
+Traditionelle feedforward Netzwerke können sequenzielle Abhängigkeiten nicht erfassen, da sie keine Möglichkeit haben, Informationen aus vorherigen Zeitschritten zu speichern. RNNs adressieren dieses Problem durch die Einführung von Rekursion:
+
+\begin{align}
+\mathbf{h}_t &= f(\mathbf{W}_{hh} \mathbf{h}_{t-1} + \mathbf{W}_{xh} \mathbf{x}_t + \mathbf{b}_h) \\
+\mathbf{y}_t &= \mathbf{W}_{hy} \mathbf{h}_t + \mathbf{b}_y
+\end{align}
+
+wobei $\mathbf{h}_t$ der versteckte Zustand zum Zeitpunkt $t$, $\mathbf{x}_t$ die Eingabe und $\mathbf{y}_t$ die Ausgabe sind.
+
+\subsection{Probleme traditioneller RNNs}
+
+RNNs leiden unter mehreren fundamentalen Problemen:
+
+\textbf{Vanishing Gradient Problem}: Bei der Backpropagation durch Zeit können Gradienten exponentiell abnehmen, was das Lernen langreichweitiger Abhängigkeiten verhindert. Mathematisch lässt sich dies durch die wiederholte Multiplikation der Gewichtsmatrix $\mathbf{W}_{hh}$ erklären:
+
+\begin{equation}
+\frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_{t-k}} = \prod_{i=1}^{k} \frac{\partial \mathbf{h}_{t-i+1}}{\partial \mathbf{h}_{t-i}} = \prod_{i=1}^{k} \text{diag}(f'(\cdot)) \mathbf{W}_{hh}
+\end{equation}
+
+\textbf{Exploding Gradient Problem}: Umgekehrt können Gradienten auch explodieren, wenn die Eigenwerte von $\mathbf{W}_{hh}$ zu groß sind.
+
+\textbf{Sequenzielle Verarbeitung}: RNNs können nicht parallelisiert werden, da $\mathbf{h}_t$ von $\mathbf{h}_{t-1}$ abhängt.
+
+\subsection{Long Short-Term Memory (LSTM)}
+
+LSTMs wurden entwickelt, um das Vanishing Gradient Problem zu lösen, indem sie einen expliziten Speichermechanismus einführen:
+
+\begin{align}
+\mathbf{f}_t &= \sigma(\mathbf{W}_f \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_f) \quad \text{(Forget Gate)} \\
+\mathbf{i}_t &= \sigma(\mathbf{W}_i \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_i) \quad \text{(Input Gate)} \\
+\tilde{\mathbf{C}}_t &= \tanh(\mathbf{W}_C \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_C) \quad \text{(Kandidaten)} \\
+\mathbf{C}_t &= \mathbf{f}_t * \mathbf{C}_{t-1} + \mathbf{i}_t * \tilde{\mathbf{C}}_t \quad \text{(Cell State)} \\
+\mathbf{o}_t &= \sigma(\mathbf{W}_o \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_o) \quad \text{(Output Gate)} \\
+\mathbf{h}_t &= \mathbf{o}_t * \tanh(\mathbf{C}_t) \quad \text{(Hidden State)}
+\end{align}
+
+\section{Attention-Mechanismen}
+
+Attention-Mechanismen stellen eine fundamentale Innovation dar, die es Modellen ermöglicht, selektiv auf verschiedene Teile der Eingabe zu fokussieren.
+
+\subsection{Grundkonzept der Attention}
+
+Das Grundprinzip der Attention basiert auf der Idee, dass nicht alle Teile der Eingabe gleich relevant für die aktuelle Vorhersage sind. Formal lässt sich Attention als gewichtete Summe von Werten definieren:
+
+\begin{equation}
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \sum_{i=1}^{n} \alpha_i \mathbf{v}_i
+\end{equation}
+
+wobei:
+\begin{itemize}
+    \item $\mathbf{Q}$ (Query) die Anfrage repräsentiert
+    \item $\mathbf{K} = [\mathbf{k}_1, \mathbf{k}_2, \ldots, \mathbf{k}_n]$ die Schlüssel
+    \item $\mathbf{V} = [\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n]$ die Werte
+    \item $\alpha_i$ die Attention-Gewichte sind
+\end{itemize}
+
+\subsection{Berechnung der Attention-Gewichte}
+
+Die Attention-Gewichte werden typischerweise durch eine Kompatibilitätsfunktion zwischen Query und Keys berechnet:
+
+\begin{align}
+e_i &= f(\mathbf{q}, \mathbf{k}_i) \quad \text{(Kompatibilität)} \\
+\alpha_i &= \frac{\exp(e_i)}{\sum_{j=1}^{n} \exp(e_j)} \quad \text{(Softmax-Normierung)}
+\end{align}
+
+Häufig verwendete Kompatibilitätsfunktionen sind:
+
+\begin{align}
+\text{Dot-Product:} \quad &f(\mathbf{q}, \mathbf{k}) = \mathbf{q}^T \mathbf{k} \\
+\text{Scaled Dot-Product:} \quad &f(\mathbf{q}, \mathbf{k}) = \frac{\mathbf{q}^T \mathbf{k}}{\sqrt{d_k}} \\
+\text{Additive:} \quad &f(\mathbf{q}, \mathbf{k}) = \mathbf{v}^T \tanh(\mathbf{W}_q \mathbf{q} + \mathbf{W}_k \mathbf{k})
+\end{align}
+
+\subsection{Self-Attention}
+
+Ein besonders wichtiger Spezialfall ist Self-Attention, bei dem Queries, Keys und Values alle aus derselben Sequenz stammen. Dies ermöglicht es jedem Element einer Sequenz, mit allen anderen Elementen zu interagieren:
+
+\begin{equation}
+\text{SelfAttention}(\mathbf{X}) = \text{Attention}(\mathbf{XW}_Q, \mathbf{XW}_K, \mathbf{XW}_V)
+\end{equation}
+
+wobei $\mathbf{X} \in \mathbb{R}^{n \times d}$ die Eingabesequenz und $\mathbf{W}_Q, \mathbf{W}_K, \mathbf{W}_V$ lernbare Gewichtsmatrizen sind.
+
+\section{Embeddings und Darstellung von Texten}
+
+Die Transformation von diskreten Symbolen (Wörtern) in kontinuierliche Vektorrepräsentationen ist ein kritischer Schritt in der neuronalen Sprachverarbeitung.
+
+\subsection{One-Hot Encoding}
+
+Die einfachste Darstellung ist One-Hot Encoding, bei dem jedes Wort durch einen Binärvektor der Länge des Vokabulars repräsentiert wird:
+
+\begin{equation}
+\mathbf{v}_{\text{word}} = [0, 0, \ldots, 1, \ldots, 0]^T
+\end{equation}
+
+Diese Darstellung ist jedoch ineffizient (sparse) und erfasst keine semantischen Beziehungen zwischen Wörtern.
+
+\subsection{Dense Word Embeddings}
+
+Dense Embeddings bilden Wörter auf niedrigdimensionale, dichte Vektoren ab:
+
+\begin{equation}
+\mathbf{e}_{\text{word}} = \mathbf{E} \mathbf{v}_{\text{word}}
+\end{equation}
+
+wobei $\mathbf{E} \in \mathbb{R}^{d \times |V|}$ die Embedding-Matrix und $|V|$ die Vokabulargröße ist.
+
+\subsection{Kontextuelle Embeddings}
+
+Traditionelle Word Embeddings wie Word2Vec oder GloVe produzieren für jedes Wort eine feste Repräsentation, unabhängig vom Kontext. Kontextuelle Embeddings hingegen erzeugen für jedes Wort eine Repräsentation, die vom umgebenden Kontext abhängt.
+
+\section{Optimierungsverfahren für Deep Learning}
+
+Das Training tiefer neuronaler Netzwerke erfordert spezialisierte Optimierungsverfahren, die über einfachen Gradientenabstieg hinausgehen.
+
+\subsection{Stochastic Gradient Descent (SGD)}
+
+SGD verwendet nicht den vollständigen Datensatz, sondern nur eine Stichprobe (Mini-Batch) für jede Parameteraktualisierung:
+
+\begin{equation}
+\mathbf{\theta} \leftarrow \mathbf{\theta} - \alpha \frac{1}{m} \sum_{i=1}^{m} \nabla_{\mathbf{\theta}} \mathcal{L}(\mathbf{\theta}; \mathbf{x}^{(i)}, \mathbf{y}^{(i)})
+\end{equation}
+
+\subsection{Adaptive Optimierungsverfahren}
+
+Moderne Optimierer wie Adam kombinieren die Vorteile von Momentum und adaptiven Lernraten:
+
+\begin{align}
+\mathbf{m}_t &= \beta_1 \mathbf{m}_{t-1} + (1 - \beta_1) \mathbf{g}_t \\
+\mathbf{v}_t &= \beta_2 \mathbf{v}_{t-1} + (1 - \beta_2) \mathbf{g}_t^2 \\
+\hat{\mathbf{m}}_t &= \frac{\mathbf{m}_t}{1 - \beta_1^t} \\
+\hat{\mathbf{v}}_t &= \frac{\mathbf{v}_t}{1 - \beta_2^t} \\
+\mathbf{\theta}_t &= \mathbf{\theta}_{t-1} - \alpha \frac{\hat{\mathbf{m}}_t}{\sqrt{\hat{\mathbf{v}}_t} + \epsilon}
+\end{align}
+
+\section{Regularisierung und Generalisierung}
+
+Um Overfitting zu vermeiden und die Generalisierungsfähigkeit zu verbessern, werden verschiedene Regularisierungstechniken eingesetzt.
+
+\subsection{Dropout}
+
+Dropout deaktiviert zufällig einen Anteil der Neuronen während des Trainings:
+
+\begin{equation}
+\mathbf{h}_{\text{dropout}} = \mathbf{h} \odot \mathbf{m}
+\end{equation}
+
+wobei $\mathbf{m}$ eine Bernoulli-verteilte Maske ist.
+
+\subsection{Layer Normalization}
+
+Layer Normalization normalisiert die Aktivierungen über die Feature-Dimension:
+
+\begin{equation}
+\layernorm(\mathbf{x}) = \gamma \frac{\mathbf{x} - \mu}{\sigma} + \beta
+\end{equation}
+
+wobei $\mu$ und $\sigma$ der Mittelwert und die Standardabweichung über die Features sind.
+
+\section{Zusammenfassung}
+
+Die in diesem Kapitel behandelten Konzepte bilden die theoretische Grundlage für das Verständnis der Transformer-Architektur. Insbesondere die Entwicklung von Attention-Mechanismen und die Probleme traditioneller sequenzieller Modelle motivieren die Notwendigkeit für einen neuen Ansatz zur Sequenzmodellierung, der im folgenden Kapitel detailliert behandelt wird.

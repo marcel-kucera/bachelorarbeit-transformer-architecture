@@ -1,0 +1,311 @@
+\chapter{Die Transformer-Architektur}
+\label{ch:transformer_architecture}
+
+\section{Einführung und Motivation}
+
+Die Transformer-Architektur, vorgestellt in der wegweisenden Arbeit "Attention Is All You Need" von Vaswani et al. (2017) \cite{vaswani2017attention}, revolutionierte das Feld der natürlichen Sprachverarbeitung durch eine fundamentale Abkehr von rekurrenten und faltungsbasierten Architekturen. Der zentrale Innovationsaspekt liegt in der ausschließlichen Verwendung von Attention-Mechanismen für die Sequenzmodellierung, wodurch sowohl die Parallelisierbarkeit als auch die Modellierungskapazität für langreichweitige Abhängigkeiten drastisch verbessert werden.
+
+Die Motivation für diese Architektur entspringt den fundamentalen Limitationen bestehender Ansätze: Während RNNs und LSTMs aufgrund ihrer sequenziellen Natur schwer parallelisierbar sind und unter dem Vanishing Gradient Problem leiden, erfassen Convolutional Neural Networks (CNNs) lokale Strukturen effizient, haben jedoch Schwierigkeiten mit langreichweitigen Abhängigkeiten aufgrund ihrer begrenzten Rezeptivfelder.
+
+\section{Architektur-Überblick}
+
+Die ursprüngliche Transformer-Architektur folgt einer Encoder-Decoder-Struktur, die speziell für Sequence-to-Sequence-Aufgaben wie maschinelle Übersetzung entwickelt wurde. Beide Komponenten bestehen aus einem Stack von identischen Schichten, wobei jede Schicht spezielle Sub-Module enthält.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[node distance=1.5cm]
+    % Encoder
+    \node[draw, rectangle, minimum width=3cm, minimum height=1cm] (enc6) {Encoder Layer 6};
+    \node[draw, rectangle, minimum width=3cm, minimum height=1cm, below of=enc6] (enc5) {Encoder Layer 5};
+    \node[below of=enc5] (encdots) {$\vdots$};
+    \node[draw, rectangle, minimum width=3cm, minimum height=1cm, below of=encdots] (enc1) {Encoder Layer 1};
+    \node[below of=enc1, minimum width=3cm] (input) {Input Embeddings + Positional Encoding};
+    
+    % Decoder
+    \node[draw, rectangle, minimum width=3cm, minimum height=1cm, right=4cm of enc6] (dec6) {Decoder Layer 6};
+    \node[draw, rectangle, minimum width=3cm, minimum height=1cm, below of=dec6] (dec5) {Decoder Layer 5};
+    \node[below of=dec5] (decdots) {$\vdots$};
+    \node[draw, rectangle, minimum width=3cm, minimum height=1cm, below of=decdots] (dec1) {Decoder Layer 1};
+    \node[below of=dec1, minimum width=3cm] (output) {Output Embeddings + Positional Encoding};
+    
+    % Output
+    \node[above of=dec6, minimum width=3cm] (final) {Linear + Softmax};
+    
+    % Arrows
+    \draw[->] (input) -- (enc1);
+    \draw[->] (enc1) -- (encdots);
+    \draw[->] (encdots) -- (enc5);
+    \draw[->] (enc5) -- (enc6);
+    
+    \draw[->] (output) -- (dec1);
+    \draw[->] (dec1) -- (decdots);
+    \draw[->] (decdots) -- (dec5);
+    \draw[->] (dec5) -- (dec6);
+    \draw[->] (dec6) -- (final);
+    
+    % Cross attention arrows
+    \draw[->] (enc6) -- (dec6);
+    \draw[->] (enc5) -- (dec5);
+    \draw[->] (enc1) -- (dec1);
+\end{tikzpicture}
+\caption{Schematische Darstellung der Transformer-Architektur}
+\label{fig:transformer_overview}
+\end{figure}
+
+\section{Scaled Dot-Product Attention}
+
+Das Herzstück der Transformer-Architektur ist der Scaled Dot-Product Attention Mechanismus. Dieser berechnet Attention-Gewichte durch das Skalarprodukt zwischen Queries und Keys, skaliert diese und wendet eine Softmax-Normierung an.
+
+\subsection{Mathematische Definition}
+
+Gegeben seien Queries $\mathbf{Q} \in \mathbb{R}^{n \times d_k}$, Keys $\mathbf{K} \in \mathbb{R}^{m \times d_k}$ und Values $\mathbf{V} \in \mathbb{R}^{m \times d_v}$. Der Scaled Dot-Product Attention wird berechnet als:
+
+\begin{equation}
+\attentionweight{\mathbf{Q}}{\mathbf{K}}{\mathbf{V}} = \text{softmax}\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}}\right)\mathbf{V}
+\label{eq:scaled_dot_product_attention}
+\end{equation}
+
+Die Skalierung durch $\sqrt{d_k}$ ist kritisch für die Stabilität des Trainings. Ohne diese Skalierung würden die Dot Products für große $d_k$ sehr große Werte annehmen, wodurch die Softmax-Funktion in Regionen mit sehr kleinen Gradienten gedrängt würde.
+
+\subsection{Intuitive Interpretation}
+
+Die Attention-Operation kann intuitiv als ein differenzierbarer Key-Value-Lookup verstanden werden:
+\begin{itemize}
+    \item Die Query $\mathbf{q}_i$ bestimmt, wonach gesucht wird
+    \item Die Keys $\mathbf{k}_j$ bestimmen, wie gut sie zur Anfrage passen
+    \item Die Values $\mathbf{v}_j$ enthalten die tatsächliche Information
+    \item Die Attention-Gewichte $\alpha_{ij}$ bestimmen, wie stark jeder Value zur finalen Ausgabe beiträgt
+\end{itemize}
+
+\subsection{Computational Complexity}
+
+Die Komplexität des Scaled Dot-Product Attention beträgt $\mathcal{O}(n \cdot m \cdot d_k + n \cdot m \cdot d_v)$ für die Matrixmultiplikationen und $\mathcal{O}(n \cdot m)$ für die Softmax-Operation. Für Self-Attention mit $n = m$ ergibt sich eine quadratische Komplexität $\mathcal{O}(n^2 \cdot d)$ bezüglich der Sequenzlänge.
+
+\section{Multi-Head Attention}
+
+Multi-Head Attention erweitert den einfachen Attention-Mechanismus, indem mehrere Attention-"Köpfe" parallel berechnet und anschließend kombiniert werden. Dies ermöglicht es dem Modell, Informationen aus verschiedenen Repräsentationsräumen zu erfassen.
+
+\subsection{Mathematische Formulierung}
+
+Multi-Head Attention wird definiert als:
+
+\begin{align}
+\multihead{\mathbf{Q}, \mathbf{K}, \mathbf{V}} &= \text{Concat}(\text{head}_1, \text{head}_2, \ldots, \text{head}_h)\mathbf{W}^O \\
+\text{head}_i &= \attentionweight{\mathbf{Q}\mathbf{W}_i^Q}{\mathbf{K}\mathbf{W}_i^K}{\mathbf{V}\mathbf{W}_i^V}
+\end{align}
+
+wobei:
+\begin{itemize}
+    \item $h$ die Anzahl der Attention-Köpfe ist
+    \item $\mathbf{W}_i^Q \in \mathbb{R}^{d_{\text{model}} \times d_k}$, $\mathbf{W}_i^K \in \mathbb{R}^{d_{\text{model}} \times d_k}$, $\mathbf{W}_i^V \in \mathbb{R}^{d_{\text{model}} \times d_v}$ die Projektionsmatrizen für den $i$-ten Kopf sind
+    \item $\mathbf{W}^O \in \mathbb{R}^{h \cdot d_v \times d_{\text{model}}}$ die finale Output-Projektion ist
+\end{itemize}
+
+\subsection{Dimensionalität und Parameter}
+
+Typischerweise wird $d_k = d_v = d_{\text{model}}/h$ gewählt, wodurch die Gesamtkomplexität der Multi-Head Attention vergleichbar mit Single-Head Attention mit der vollen Dimensionalität bleibt. Für das ursprüngliche Transformer-Modell gilt: $d_{\text{model}} = 512$, $h = 8$, $d_k = d_v = 64$.
+
+\subsection{Interpretierbarkeit verschiedener Köpfe}
+
+Verschiedene Attention-Köpfe lernen typischerweise, verschiedene Arten von Beziehungen zu erfassen:
+\begin{itemize}
+    \item Syntaktische Beziehungen (Subjekt-Verb-Objekt)
+    \item Langreichweitige semantische Abhängigkeiten
+    \item Lokale Kohärenz und Adjazenz
+    \item Koreferenz-Beziehungen
+\end{itemize}
+
+\section{Positional Encoding}
+
+Da Attention-Mechanismen permutationsinvariant sind, ist explizite Positionsinformation notwendig, um die sequenzielle Ordnung zu erfassen. Transformer verwenden additive Positional Encodings.
+
+\subsection{Sinusoidale Positional Encodings}
+
+Das ursprüngliche Transformer-Modell verwendet sinusoidale Funktionen für Positional Encodings:
+
+\begin{align}
+PE_{(pos, 2i)} &= \sin\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right) \\
+PE_{(pos, 2i+1)} &= \cos\left(\frac{pos}{10000^{2i/d_{\text{model}}}}\right)
+\end{align}
+
+wobei $pos$ die Position und $i$ die Dimension ist.
+
+\subsection{Eigenschaften sinusoidaler Encodings}
+
+Die sinusoidalen Encodings haben mehrere vorteilhafte Eigenschaften:
+\begin{itemize}
+    \item \textbf{Eindeutigkeit}: Jede Position erhält eine eindeutige Kodierung
+    \item \textbf{Extrapolation}: Das Modell kann Sequenzen verarbeiten, die länger sind als die während des Trainings gesehenen
+    \item \textbf{Relative Positionen}: Der Unterschied zwischen Positionen kann durch lineare Transformationen ausgedrückt werden
+\end{itemize}
+
+\subsection{Alternative Ansätze}
+
+Moderne Implementierungen verwenden oft lernbare Positional Embeddings:
+
+\begin{equation}
+\mathbf{E}_{\text{pos}} \in \mathbb{R}^{L_{\max} \times d_{\text{model}}}
+\end{equation}
+
+wobei $L_{\max}$ die maximale Sequenzlänge ist.
+
+\section{Feed-Forward Networks}
+
+Jede Transformer-Schicht enthält ein Position-wise Feed-Forward Network (FFN), das auf jede Position der Sequenz separat und identisch angewendet wird.
+
+\subsection{Architektur}
+
+Das FFN besteht aus zwei linearen Transformationen mit einer ReLU-Aktivierung:
+
+\begin{equation}
+\text{FFN}(\mathbf{x}) = \max(0, \mathbf{x}\mathbf{W}_1 + \mathbf{b}_1)\mathbf{W}_2 + \mathbf{b}_2
+\end{equation}
+
+wobei $\mathbf{W}_1 \in \mathbb{R}^{d_{\text{model}} \times d_{ff}}$ und $\mathbf{W}_2 \in \mathbb{R}^{d_{ff} \times d_{\text{model}}}$. Typischerweise ist $d_{ff} = 4 \cdot d_{\text{model}}$.
+
+\subsection{Funktion und Interpretation}
+
+Das FFN kann als Anwendung einer 1×1-Faltung über die Sequenzdimension interpretiert werden. Es ermöglicht nicht-lineare Transformationen der Repräsentationen und erhöht die Modellkapazität erheblich.
+
+\section{Residual Connections und Layer Normalization}
+
+Transformer verwenden Residual Connections um jedes Sub-Modul, gefolgt von Layer Normalization. Dies stabilisiert das Training tiefer Netzwerke.
+
+\subsection{Residual Connections}
+
+Residual Connections addieren die Eingabe eines Sub-Moduls zu dessen Ausgabe:
+
+\begin{equation}
+\mathbf{output} = \text{SubLayer}(\mathbf{input}) + \mathbf{input}
+\end{equation}
+
+Dies ermöglicht den direkten Informationsfluss und erleichtert das Training tiefer Architekturen.
+
+\subsection{Layer Normalization}
+
+Layer Normalization normalisiert über die Feature-Dimension für jeden einzelnen Sample:
+
+\begin{equation}
+\layernorm(\mathbf{x}) = \gamma \frac{\mathbf{x} - \mu}{\sigma + \epsilon} + \beta
+\end{equation}
+
+wobei:
+\begin{align}
+\mu &= \frac{1}{d} \sum_{i=1}^{d} x_i \\
+\sigma^2 &= \frac{1}{d} \sum_{i=1}^{d} (x_i - \mu)^2
+\end{align}
+
+\section{Encoder-Architektur}
+
+Der Transformer-Encoder besteht aus einem Stack von $N$ identischen Schichten, wobei jede Schicht zwei Sub-Module enthält.
+
+\subsection{Encoder-Schicht}
+
+Eine einzelne Encoder-Schicht implementiert:
+
+\begin{align}
+\mathbf{z}_1 &= \layernorm(\mathbf{x} + \text{MultiHeadAttention}(\mathbf{x}, \mathbf{x}, \mathbf{x})) \\
+\mathbf{z}_2 &= \layernorm(\mathbf{z}_1 + \text{FFN}(\mathbf{z}_1))
+\end{align}
+
+Die Self-Attention in der Encoder-Schicht ermöglicht es jeder Position, Informationen aus allen anderen Positionen zu erfassen.
+
+\subsection{Masking im Encoder}
+
+Im Encoder wird typischerweise nur Padding-Masking angewendet, um zu verhindern, dass das Modell auf Padding-Tokens achtet:
+
+\begin{equation}
+\text{mask}_{ij} = \begin{cases}
+0 & \text{wenn Token $j$ ein Padding-Token ist} \\
+-\infty & \text{sonst}
+\end{cases}
+\end{equation}
+
+\section{Decoder-Architektur}
+
+Der Transformer-Decoder erweitert die Encoder-Architektur um einen zusätzlichen Attention-Mechanismus und verwendet Masked Self-Attention.
+
+\subsection{Decoder-Schicht}
+
+Eine Decoder-Schicht enthält drei Sub-Module:
+
+\begin{align}
+\mathbf{z}_1 &= \layernorm(\mathbf{y} + \text{MaskedMultiHeadAttention}(\mathbf{y}, \mathbf{y}, \mathbf{y})) \\
+\mathbf{z}_2 &= \layernorm(\mathbf{z}_1 + \text{MultiHeadAttention}(\mathbf{z}_1, \mathbf{h}, \mathbf{h})) \\
+\mathbf{z}_3 &= \layernorm(\mathbf{z}_2 + \text{FFN}(\mathbf{z}_2))
+\end{align}
+
+wobei $\mathbf{h}$ die Ausgabe des Encoders ist.
+
+\subsection{Masked Self-Attention}
+
+Um die Autoregressive Eigenschaft zu gewährleisten, verhindert Masked Self-Attention, dass Positionen auf nachfolgende Positionen zugreifen:
+
+\begin{equation}
+\text{mask}_{ij} = \begin{cases}
+0 & \text{wenn } i \geq j \\
+-\infty & \text{wenn } i < j
+\end{cases}
+\end{equation}
+
+\subsection{Cross-Attention}
+
+Die Cross-Attention zwischen Decoder und Encoder ermöglicht es dem Decoder, relevante Informationen aus der Eingabesequenz zu extrahieren. Hier stammen die Keys und Values aus dem Encoder, während die Queries aus dem vorherigen Decoder-Layer kommen.
+
+\section{Training und Inferenz}
+
+\subsection{Training}
+
+Während des Trainings wird Teacher Forcing verwendet: Die gesamte Zielsequenz ist verfügbar, und alle Positionen können parallel verarbeitet werden. Das Masking stellt sicher, dass keine zukünftigen Informationen verwendet werden.
+
+Die Verlustfunktion ist typischerweise die Cross-Entropy über das Vokabular:
+
+\begin{equation}
+\mathcal{L} = -\sum_{t=1}^{T} \sum_{v=1}^{|V|} y_{t,v} \log(\hat{y}_{t,v})
+\end{equation}
+
+\subsection{Inferenz}
+
+Während der Inferenz muss autoregressiv generiert werden: Jedes neue Token wird basierend auf den bisher generierten Tokens vorhergesagt. Dies erfordert mehrere Forward-Passes durch das Modell.
+
+\section{Komplexitätsanalyse}
+
+\subsection{Zeitkomplexität}
+
+Die Zeitkomplexität verschiedener Operationen im Transformer:
+
+\begin{itemize}
+    \item Self-Attention: $\mathcal{O}(n^2 \cdot d)$
+    \item Feed-Forward: $\mathcal{O}(n \cdot d^2)$
+    \item Gesamt pro Schicht: $\mathcal{O}(n^2 \cdot d + n \cdot d^2)$
+\end{itemize}
+
+Für lange Sequenzen ($n > d$) dominiert die quadratische Komplexität der Self-Attention.
+
+\subsection{Speicherkomplexität}
+
+Die Speicherkomplexität ist ebenfalls quadratisch in der Sequenzlänge aufgrund der Attention-Matrizen: $\mathcal{O}(n^2 \cdot h)$ wobei $h$ die Anzahl der Attention-Köpfe ist.
+
+\section{Vorteile und Limitationen}
+
+\subsection{Vorteile}
+
+\begin{itemize}
+    \item \textbf{Parallelisierbarkeit}: Alle Positionen können gleichzeitig verarbeitet werden
+    \item \textbf{Langreichweitige Abhängigkeiten}: Direkte Verbindungen zwischen allen Positionen
+    \item \textbf{Interpretierbarkeit}: Attention-Gewichte bieten Einblicke in Modellentscheidungen
+    \item \textbf{Flexibilität}: Anpassbar für verschiedene Aufgaben und Modalitäten
+\end{itemize}
+
+\subsection{Limitationen}
+
+\begin{itemize}
+    \item \textbf{Quadratische Komplexität}: Skalierung zu langen Sequenzen ist problematisch
+    \item \textbf{Speicherverbrauch}: Große Attention-Matrizen
+    \item \textbf{Positionelle Limitationen}: Schwierigkeiten mit sehr langen Sequenzen
+    \item \textbf{Inductive Bias}: Weniger strukturierte Annahmen als CNNs oder RNNs
+\end{itemize}
+
+\section{Zusammenfassung}
+
+Die Transformer-Architektur stellt einen Paradigmenwechsel in der Sequenzmodellierung dar. Durch die ausschließliche Verwendung von Attention-Mechanismen löst sie die fundamentalen Probleme rekurrenter Architekturen und ermöglicht eine effiziente Parallelisierung bei gleichzeitiger Erfassung langreichweitiger Abhängigkeiten. Die modulare Struktur und die mathematische Eleganz der Architektur haben sie zur Grundlage moderner Large Language Models gemacht und zahlreiche Weiterentwicklungen inspiriert, die im folgenden Kapitel behandelt werden.

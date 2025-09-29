@@ -1,0 +1,470 @@
+\chapter{Code-Dokumentation}
+\label{app:code}
+
+\section{Überblick}
+
+Dieser Anhang dokumentiert die wichtigsten Code-Komponenten der Transformer-Implementierung. Der vollständige Quellcode ist im GitHub-Repository verfügbar und umfasst etwa 2.500 Zeilen Python-Code mit ausführlicher Dokumentation.
+
+\section{Projektstruktur}
+
+\begin{lstlisting}[style=pythonstyle, caption=Projektstruktur]
+src/
+├── models/
+│   ├── __init__.py
+│   ├── transformer.py          # Vollständige Transformer-Implementierung
+│   └── language_model.py       # GPT-style Language Model
+├── utils/
+│   ├── __init__.py
+│   ├── tokenizer.py           # Einfacher Tokenizer
+│   └── data_loader.py         # Datenverarbeitungsfunktionen
+├── training/
+│   ├── __init__.py
+│   ├── trainer.py             # Training-Loop und Evaluierung
+│   └── optimizer.py           # Optimierungsstrategien
+└── experiments/
+    ├── train_language_model.py # Beispiel-Training-Script
+    ├── evaluate_model.py       # Evaluierungs-Script
+    └── generate_text.py        # Textgenerierungs-Demo
+\end{lstlisting}
+
+\section{Kernkomponenten}
+
+\subsection{Multi-Head Attention}
+
+Die zentrale Attention-Implementierung:
+
+\begin{lstlisting}[style=pythonstyle, caption=Multi-Head Attention Klasse]
+class MultiHeadAttention(nn.Module):
+    """
+    Multi-Head Attention mechanism implementation.
+    
+    Args:
+        d_model: Model dimension
+        n_heads: Number of attention heads
+        dropout: Dropout probability
+    """
+    
+    def __init__(self, d_model: int, n_heads: int, dropout: float = 0.1):
+        super().__init__()
+        assert d_model % n_heads == 0
+        
+        self.d_model = d_model
+        self.n_heads = n_heads
+        self.d_k = d_model // n_heads
+        
+        # Linear projections for Q, K, V
+        self.w_q = nn.Linear(d_model, d_model, bias=False)
+        self.w_k = nn.Linear(d_model, d_model, bias=False)
+        self.w_v = nn.Linear(d_model, d_model, bias=False)
+        self.w_o = nn.Linear(d_model, d_model)
+        
+        self.dropout = nn.Dropout(dropout)
+\end{lstlisting}
+
+\subsection{Positional Encoding}
+
+Sinusoidale Positional Encodings:
+
+\begin{lstlisting}[style=pythonstyle, caption=Positional Encoding Implementation]
+class PositionalEncoding(nn.Module):
+    """
+    Sinusoidal positional encoding implementation.
+    """
+    
+    def __init__(self, d_model: int, max_len: int = 5000):
+        super().__init__()
+        
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2).float() * 
+            (-math.log(10000.0) / d_model)
+        )
+        
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        
+        self.register_buffer('pe', pe)
+\end{lstlisting}
+
+\subsection{Transformer Layer}
+
+Encoder und Decoder Layer Implementierung:
+
+\begin{lstlisting}[style=pythonstyle, caption=Encoder Layer]
+class EncoderLayer(nn.Module):
+    """
+    Single Transformer Encoder Layer.
+    """
+    
+    def __init__(self, d_model: int, n_heads: int, d_ff: int, dropout: float = 0.1):
+        super().__init__()
+        self.self_attention = MultiHeadAttention(d_model, n_heads, dropout)
+        self.feed_forward = PositionwiseFeedForward(d_model, d_ff, dropout)
+        self.norm1 = nn.LayerNorm(d_model)
+        self.norm2 = nn.LayerNorm(d_model)
+        self.dropout = nn.Dropout(dropout)
+    
+    def forward(self, x: torch.Tensor, mask: Optional[torch.Tensor] = None):
+        # Self-attention with residual connection
+        attention_output = self.self_attention(x, x, x, mask)
+        x = self.norm1(x + self.dropout(attention_output))
+        
+        # Feed-forward with residual connection
+        ff_output = self.feed_forward(x)
+        x = self.norm2(x + self.dropout(ff_output))
+        
+        return x
+\end{lstlisting}
+
+\section{Training Infrastructure}
+
+\subsection{Trainer Klasse}
+
+Die Hauptklasse für Training und Evaluierung:
+
+\begin{lstlisting}[style=pythonstyle, caption=Training Infrastructure]
+class LanguageModelTrainer:
+    """
+    Comprehensive trainer for Transformer language models.
+    
+    Features:
+    - Training with proper scheduling and optimization
+    - Evaluation and monitoring
+    - Checkpointing and model saving
+    - Sample generation during training
+    - Training curve visualization
+    """
+    
+    def __init__(self, model, tokenizer, device, output_dir="./checkpoints"):
+        self.model = model
+        self.tokenizer = tokenizer
+        self.device = device
+        self.output_dir = output_dir
+        
+        # Training state
+        self.global_step = 0
+        self.epoch = 0
+        self.best_loss = float('inf')
+        
+        # Logging
+        self.train_losses = []
+        self.eval_losses = []
+        self.learning_rates = []
+\end{lstlisting}
+
+\subsection{Optimierung}
+
+AdamW Optimizer mit Weight Decay:
+
+\begin{lstlisting}[style=pythonstyle, caption=Optimizer Setup]
+def create_optimizer(self, learning_rate=1e-4, weight_decay=0.01):
+    """Create AdamW optimizer with proper weight decay."""
+    
+    # Separate parameters for weight decay
+    decay_params = []
+    no_decay_params = []
+    
+    for name, param in self.model.named_parameters():
+        if param.requires_grad:
+            if 'bias' in name or 'norm' in name:
+                no_decay_params.append(param)
+            else:
+                decay_params.append(param)
+    
+    optimizer_grouped_parameters = [
+        {'params': decay_params, 'weight_decay': weight_decay},
+        {'params': no_decay_params, 'weight_decay': 0.0}
+    ]
+    
+    return optim.AdamW(optimizer_grouped_parameters, lr=learning_rate)
+\end{lstlisting}
+
+\section{Tokenizer}
+
+\subsection{Einfacher Tokenizer}
+
+Word-level Tokenizer mit Vokabular-Management:
+
+\begin{lstlisting}[style=pythonstyle, caption=Tokenizer Implementation]
+class SimpleTokenizer:
+    """
+    Simple word-level tokenizer with vocabulary management.
+    
+    Features:
+    - Text preprocessing and normalization
+    - Vocabulary building from corpus
+    - Encoding/decoding with special tokens
+    - Batch processing with padding
+    """
+    
+    def __init__(self, vocab_size: int = 10000, min_freq: int = 2):
+        self.vocab_size = vocab_size
+        self.min_freq = min_freq
+        
+        # Special tokens
+        self.special_tokens = {
+            '<pad>': 0, '<unk>': 1, '<bos>': 2, '<eos>': 3
+        }
+        
+        self.token_to_id = {}
+        self.id_to_token = {}
+        self.token_freq = {}
+    
+    def build_vocabulary(self, texts: List[str]):
+        """Build vocabulary from training texts."""
+        token_counter = Counter()
+        
+        for text in texts:
+            tokens = self.tokenize(text)
+            token_counter.update(tokens)
+        
+        # Filter by frequency and build vocab
+        # ... implementation details
+\end{lstlisting}
+
+\section{Modell-Konfiguration}
+
+\subsection{Factory Functions}
+
+Einfache Erstellung verschiedener Modell-Konfigurationen:
+
+\begin{lstlisting}[style=pythonstyle, caption=Model Factory Functions]
+def create_small_language_model(vocab_size: int, **kwargs) -> GPTLanguageModel:
+    """Create a small language model for experimentation."""
+    return GPTLanguageModel(
+        vocab_size=vocab_size,
+        d_model=kwargs.get('d_model', 256),
+        n_heads=kwargs.get('n_heads', 4),
+        n_layers=kwargs.get('n_layers', 4),
+        d_ff=kwargs.get('d_ff', 1024),
+        max_len=kwargs.get('max_len', 512),
+        dropout=kwargs.get('dropout', 0.1)
+    )
+
+def create_medium_language_model(vocab_size: int, **kwargs) -> GPTLanguageModel:
+    """Create a medium-sized language model."""
+    return GPTLanguageModel(
+        vocab_size=vocab_size,
+        d_model=kwargs.get('d_model', 384),
+        n_heads=kwargs.get('n_heads', 6),
+        n_layers=kwargs.get('n_layers', 6),
+        d_ff=kwargs.get('d_ff', 1536),
+        max_len=kwargs.get('max_len', 512),
+        dropout=kwargs.get('dropout', 0.1)
+    )
+\end{lstlisting}
+
+\section{Beispiel-Scripts}
+
+\subsection{Training Script}
+
+Vollständiges Trainings-Beispiel:
+
+\begin{lstlisting}[style=pythonstyle, caption=Training Example]
+def main():
+    # Setup
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    # Load data and create tokenizer
+    texts = load_sample_data()
+    tokenizer = SimpleTokenizer(vocab_size=5000)
+    tokenizer.build_vocabulary(texts)
+    
+    # Create model
+    model = create_small_language_model(
+        vocab_size=tokenizer.get_vocab_size()
+    ).to(device)
+    
+    # Prepare data
+    dataset = create_simple_dataset(texts, tokenizer, max_length=128)
+    train_dataloader, eval_dataloader = create_data_loaders(
+        dataset, batch_size=32
+    )
+    
+    # Train
+    trainer = LanguageModelTrainer(model, tokenizer, device)
+    trainer.train(
+        train_dataloader=train_dataloader,
+        eval_dataloader=eval_dataloader,
+        num_epochs=10,
+        learning_rate=1e-4
+    )
+\end{lstlisting}
+
+\subsection{Textgenerierung}
+
+Interaktive Textgenerierung:
+
+\begin{lstlisting}[style=pythonstyle, caption=Text Generation Script]
+@torch.no_grad()
+def generate_text_interactive(model, tokenizer, device):
+    """Interactive text generation loop."""
+    model.eval()
+    
+    print("Interactive Text Generation (type 'quit' to exit)")
+    
+    while True:
+        prompt = input("\nEnter prompt: ")
+        if prompt.lower() == 'quit':
+            break
+        
+        # Encode prompt
+        input_ids = torch.tensor(
+            tokenizer.encode(prompt), dtype=torch.long
+        ).unsqueeze(0).to(device)
+        
+        # Generate
+        generated = model.generate(
+            input_ids=input_ids,
+            max_new_tokens=50,
+            temperature=0.8,
+            top_k=50,
+            do_sample=True
+        )
+        
+        # Decode and display
+        generated_text = tokenizer.decode(generated[0].cpu().tolist())
+        print(f"Generated: {generated_text}")
+\end{lstlisting}
+
+\section{Testing und Validierung}
+
+\subsection{Unit Tests}
+
+Beispiel für Komponenten-Tests:
+
+\begin{lstlisting}[style=pythonstyle, caption=Unit Test Example]
+import pytest
+import torch
+from src.models.transformer import MultiHeadAttention
+
+def test_multihead_attention_output_shape():
+    """Test that MultiHeadAttention produces correct output shape."""
+    batch_size, seq_len, d_model = 2, 10, 512
+    n_heads = 8
+    
+    attention = MultiHeadAttention(d_model, n_heads)
+    
+    # Create test input
+    x = torch.randn(batch_size, seq_len, d_model)
+    
+    # Forward pass
+    output = attention(x, x, x)
+    
+    # Check output shape
+    assert output.shape == (batch_size, seq_len, d_model)
+
+def test_attention_with_mask():
+    """Test attention mechanism with masking."""
+    # ... test implementation
+\end{lstlisting}
+
+\section{Performance Monitoring}
+
+\subsection{Metriken und Logging}
+
+Umfassendes Monitoring während Training:
+
+\begin{lstlisting}[style=pythonstyle, caption=Monitoring Implementation]
+def log_training_metrics(self, loss, learning_rate, gradient_norm):
+    """Log comprehensive training metrics."""
+    
+    metrics = {
+        'epoch': self.epoch,
+        'global_step': self.global_step,
+        'train_loss': loss,
+        'learning_rate': learning_rate,
+        'gradient_norm': gradient_norm,
+        'perplexity': math.exp(loss),
+        'tokens_per_second': self.calculate_throughput(),
+        'gpu_memory_used': torch.cuda.memory_allocated() / 1e9
+    }
+    
+    # Log to various backends
+    self.log_to_tensorboard(metrics)
+    self.log_to_wandb(metrics)
+    self.save_metrics_json(metrics)
+
+def calculate_throughput(self):
+    """Calculate tokens processed per second."""
+    if hasattr(self, '_last_time') and hasattr(self, '_last_tokens'):
+        current_time = time.time()
+        current_tokens = self.global_step * self.batch_size * self.seq_len
+        
+        time_diff = current_time - self._last_time
+        token_diff = current_tokens - self._last_tokens
+        
+        return token_diff / time_diff if time_diff > 0 else 0
+    
+    self._last_time = time.time()
+    self._last_tokens = 0
+    return 0
+\end{lstlisting}
+
+\section{Konfiguration und Reproduzierbarkeit}
+
+\subsection{Hyperparameter Management}
+
+Strukturierte Konfigurationsverwaltung:
+
+\begin{lstlisting}[style=pythonstyle, caption=Configuration Management]
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class ModelConfig:
+    """Model architecture configuration."""
+    vocab_size: int
+    d_model: int = 512
+    n_heads: int = 8
+    n_layers: int = 6
+    d_ff: int = 2048
+    max_len: int = 512
+    dropout: float = 0.1
+
+@dataclass
+class TrainingConfig:
+    """Training configuration."""
+    batch_size: int = 32
+    learning_rate: float = 1e-4
+    weight_decay: float = 0.01
+    warmup_steps: int = 1000
+    max_epochs: int = 10
+    gradient_clip_norm: float = 1.0
+    save_steps: int = 1000
+    eval_steps: int = 500
+
+def set_random_seeds(seed: int = 42):
+    """Set all random seeds for reproducibility."""
+    import random
+    import numpy as np
+    
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    
+    # For deterministic behavior (may impact performance)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+\end{lstlisting}
+
+\section{Zusammenfassung}
+
+Die Code-Implementierung umfasst:
+
+\begin{itemize}
+    \item \textbf{Vollständige Transformer-Architektur} mit allen wichtigen Komponenten
+    \item \textbf{Modulare Struktur} für einfache Erweiterung und Wartung
+    \item \textbf{Umfassende Training-Infrastructure} mit Monitoring und Checkpointing
+    \item \textbf{Flexible Konfiguration} für verschiedene Experimente
+    \item \textbf{Ausführliche Dokumentation} und Beispiele
+    \item \textbf{Testing-Framework} für Validierung der Komponenten
+    \item \textbf{Reproduzierbarkeit} durch Seed-Kontrolle und Konfiguration
+\end{itemize}
+
+Der vollständige Code ist im GitHub-Repository verfügbar und kann als Ausgangspunkt für weitere Experimente und Entwicklungen verwendet werden.
