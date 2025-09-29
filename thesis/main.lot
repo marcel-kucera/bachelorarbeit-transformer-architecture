@@ -1,0 +1,33 @@
+\babel@toc {english}{}\relax 
+\babel@toc {ngerman}{}\relax 
+\babel@toc {english}{}\relax 
+\babel@toc {ngerman}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {5.1}{\ignorespaces Experimentelle Modell-Konfigurationen}}{51}{table.caption.7}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {6.1}{\ignorespaces Experimentelle Modell-Konfigurationen}}{56}{table.caption.8}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Perplexity-Ergebnisse verschiedener Modell-Konfigurationen}}{57}{table.caption.10}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Einfluss der Anzahl Attention-Köpfe (Small Model, $d_{\text {model}}=256$)}}{59}{table.caption.12}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Vergleich verschiedener Positional Encoding Strategien}}{60}{table.caption.14}%
+\contentsline {table}{\numberline {6.5}{\ignorespaces Performance-Metriken für verschiedene Modell-Konfigurationen}}{60}{table.caption.15}%
+\contentsline {table}{\numberline {6.6}{\ignorespaces Vergleich mit LSTM-Baseline}}{60}{table.caption.16}%
+\contentsline {table}{\numberline {6.7}{\ignorespaces Out-of-Domain Performance}}{61}{table.caption.17}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {B.1}{\ignorespaces Detaillierte Modell-Konfigurationen}}{92}{table.caption.20}%
+\contentsline {table}{\numberline {B.2}{\ignorespaces Training-Hyperparameter}}{92}{table.caption.21}%
+\contentsline {table}{\numberline {B.3}{\ignorespaces Detaillierter Training-Verlauf des Small-Modells}}{93}{table.caption.22}%
+\contentsline {table}{\numberline {B.4}{\ignorespaces Skalierungs-Metriken verschiedener Modellgrößen}}{93}{table.caption.23}%
+\contentsline {table}{\numberline {B.5}{\ignorespaces Einfluss der Anzahl Attention-Köpfe (d\_model=256)}}{93}{table.caption.24}%
+\contentsline {table}{\numberline {B.6}{\ignorespaces Einfluss der Schichttiefe auf Performance}}{94}{table.caption.25}%
+\contentsline {table}{\numberline {B.7}{\ignorespaces Einfluss der Modell-Dimension}}{94}{table.caption.26}%
+\contentsline {table}{\numberline {B.8}{\ignorespaces Vokabular-Statistiken des Tokenizers}}{94}{table.caption.27}%
+\contentsline {table}{\numberline {B.12}{\ignorespaces Vergleich mit veröffentlichten Modellen (verschiedene Datasets)}}{98}{table.caption.31}%
+\contentsline {table}{\numberline {B.13}{\ignorespaces Learning Rate Sensitivitätsanalyse}}{99}{table.caption.32}%
+\contentsline {table}{\numberline {B.14}{\ignorespaces Batch Size Einfluss auf Training}}{99}{table.caption.33}%

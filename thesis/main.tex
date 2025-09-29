@@ -1,0 +1,168 @@
+\documentclass[12pt,a4paper,oneside]{report}
+
+% German language support
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman,english]{babel}
+
+% Page layout
+\usepackage[left=3cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% Mathematical notation
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+
+% Graphics and figures
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{arrows,decorations.pathmorphing,backgrounds,positioning,fit,petri}
+
+% Tables
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+
+% Code listings
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Define Python syntax highlighting
+\lstdefinestyle{pythonstyle}{
+    language=Python,
+    basicstyle=\ttfamily\footnotesize,
+    commentstyle=\color{gray},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{gray},
+    stringstyle=\color{red},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+% References and citations
+\usepackage[style=ieee,backend=biber,sorting=none]{biblatex}
+\addbibresource{bibliography/references.bib}
+
+% Hyperlinks
+\usepackage[colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue]{hyperref}
+
+% Headers and footers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[R]{\thepage}
+\fancyhead[L]{\leftmark}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Title page information
+\title{Transformer-Architektur: Theoretische Grundlagen und praktische Implementierung eines Large Language Models}
+\author{Marcel Kučera}
+\date{\today}
+
+% Custom commands
+\newcommand{\attentionweight}[3]{\text{Attention}(#1, #2, #3)}
+\newcommand{\multihead}[1]{\text{MultiHead}(#1)}
+\newcommand{\layernorm}[1]{\text{LayerNorm}(#1)}
+
+\begin{document}
+
+% Title page
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    
+    {\LARGE\bfseries Bachelorarbeit}
+    
+    \vspace{1.5cm}
+    
+    {\huge\bfseries Transformer-Architektur: Theoretische Grundlagen und praktische Implementierung eines Large Language Models}
+    
+    \vspace{2cm}
+    
+    {\Large vorgelegt von}
+    
+    \vspace{0.5cm}
+    
+    {\Large\bfseries Marcel Kučera}
+    
+    \vspace{2cm}
+    
+    {\large zur Erlangung des Grades eines\\
+    Bachelor of Science (B.Sc.)}
+    
+    \vspace{1.5cm}
+    
+    {\large an der}
+    
+    \vspace{0.5cm}
+    
+    {\Large [Name der Universität]}
+    
+    \vspace{0.5cm}
+    
+    {\large Fakultät für Informatik}
+    
+    \vfill
+    
+    {\large\today}
+\end{titlepage}
+
+% Abstract in German
+\selectlanguage{ngerman}
+\chapter*{Zusammenfassung}
+\addcontentsline{toc}{chapter}{Zusammenfassung}
+
+Diese Bachelorarbeit behandelt die theoretischen Grundlagen der Transformer-Architektur und deren praktische Anwendung in der Entwicklung von Large Language Models (LLMs). Die Transformer-Architektur, erstmals 2017 von Vaswani et al. vorgestellt, revolutionierte das Gebiet der natürlichen Sprachverarbeitung durch die Einführung des Attention-Mechanismus als zentrales Element der Modellarchitektur.
+
+Die Arbeit gliedert sich in einen theoretischen und einen praktischen Teil. Im theoretischen Teil werden die mathematischen Grundlagen der Attention-Mechanismen, die Architektur des ursprünglichen Transformer-Modells sowie wichtige Varianten und Weiterentwicklungen detailliert erläutert. Der praktische Teil umfasst die Implementierung eines kleinen, aber funktionsfähigen Large Language Models unter Verwendung der PyTorch-Bibliothek.
+
+Die entwickelte Implementierung demonstriert die praktische Anwendung der theoretischen Konzepte und zeigt die Funktionsweise der verschiedenen Komponenten des Transformer-Modells auf. Durch experimentelle Evaluierung werden die Eigenschaften und Leistungsfähigkeit des implementierten Modells analysiert und bewertet.
+
+% Abstract in English
+\selectlanguage{english}
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+This bachelor's thesis addresses the theoretical foundations of the Transformer architecture and its practical application in the development of Large Language Models (LLMs). The Transformer architecture, first introduced by Vaswani et al. in 2017, revolutionized the field of natural language processing through the introduction of the attention mechanism as the central element of model architecture.
+
+The thesis is structured into theoretical and practical parts. The theoretical part provides detailed explanations of the mathematical foundations of attention mechanisms, the architecture of the original Transformer model, and important variants and developments. The practical part includes the implementation of a small but functional Large Language Model using the PyTorch library.
+
+The developed implementation demonstrates the practical application of theoretical concepts and shows the functionality of various components of the Transformer model. Through experimental evaluation, the characteristics and performance of the implemented model are analyzed and assessed.
+
+\selectlanguage{ngerman}
+
+% Table of contents
+\tableofcontents
+\listoffigures
+\listoftables
+
+% Main content
+\input{chapters/01_introduction}
+\input{chapters/02_foundations}
+\input{chapters/03_transformer_architecture}
+\input{chapters/04_transformer_variants}
+\input{chapters/05_implementation}
+\input{chapters/06_experiments}
+\input{chapters/07_discussion}
+\input{chapters/08_conclusion}
+
+% Bibliography
+\printbibliography
+
+% Appendices
+\appendix
+\input{chapters/appendix_a_code}
+\input{chapters/appendix_b_results}
+
+\end{document}

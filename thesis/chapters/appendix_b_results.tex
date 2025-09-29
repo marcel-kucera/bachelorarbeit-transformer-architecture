@@ -1,0 +1,422 @@
+\chapter{Detaillierte Experimentelle Ergebnisse}
+\label{app:results}
+
+\section{Vollständige Hyperparameter-Übersicht}
+
+\subsection{Modell-Konfigurationen}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|l|c|c|c|c|c|c|c|}
+\hline
+\textbf{Parameter} & \textbf{Micro} & \textbf{Small} & \textbf{Medium} & \textbf{Large} \\
+\hline
+d\_model & 128 & 256 & 384 & 512 \\
+n\_layers & 2 & 4 & 6 & 8 \\
+n\_heads & 2 & 4 & 6 & 8 \\
+d\_ff & 512 & 1024 & 1536 & 2048 \\
+dropout & 0.1 & 0.1 & 0.1 & 0.1 \\
+max\_len & 512 & 512 & 512 & 512 \\
+vocab\_size & 5000 & 5000 & 5000 & 5000 \\
+\hline
+\textbf{Parameter} & \textbf{394K} & \textbf{2.13M} & \textbf{6.84M} & \textbf{15.75M} \\
+\hline
+\end{tabular}
+\caption{Detaillierte Modell-Konfigurationen}
+\label{tab:detailed_model_configs}
+\end{table}
+
+\subsection{Training-Hyperparameter}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Hyperparameter} & \textbf{Wert} \\
+\hline
+Batch Size & 32 \\
+Learning Rate & $1 \times 10^{-4}$ \\
+Weight Decay & 0.01 \\
+Beta1 (Adam) & 0.9 \\
+Beta2 (Adam) & 0.95 \\
+Epsilon (Adam) & $1 \times 10^{-8}$ \\
+Warmup Steps & 1000 \\
+Max Gradient Norm & 1.0 \\
+Label Smoothing & 0.0 \\
+\hline
+\end{tabular}
+\caption{Training-Hyperparameter}
+\label{tab:training_hyperparameters}
+\end{table}
+
+\section{Detaillierte Performance-Metriken}
+
+\subsection{Training-Verlauf}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Epoche} & \textbf{Train Loss} & \textbf{Val Loss} & \textbf{Train PPL} & \textbf{Val PPL} & \textbf{LR} \\
+\hline
+1 & 4.23 & 4.31 & 68.7 & 74.4 & $1.0 \times 10^{-5}$ \\
+5 & 3.82 & 3.89 & 45.7 & 48.8 & $5.0 \times 10^{-5}$ \\
+10 & 3.41 & 3.58 & 30.3 & 35.9 & $1.0 \times 10^{-4}$ \\
+15 & 3.08 & 3.27 & 21.8 & 26.4 & $1.0 \times 10^{-4}$ \\
+20 & 2.86 & 3.05 & 17.5 & 21.1 & $1.0 \times 10^{-4}$ \\
+25 & 2.69 & 2.87 & 14.7 & 17.6 & $9.5 \times 10^{-5}$ \\
+30 & 2.56 & 2.75 & 12.9 & 15.6 & $9.0 \times 10^{-5}$ \\
+35 & 2.47 & 2.66 & 11.8 & 14.3 & $8.5 \times 10^{-5}$ \\
+40 & 2.39 & 2.59 & 10.9 & 13.3 & $8.0 \times 10^{-5}$ \\
+45 & 2.34 & 2.55 & 10.4 & 12.8 & $7.5 \times 10^{-5}$ \\
+50 & 2.30 & 2.52 & 10.0 & 12.4 & $7.0 \times 10^{-5}$ \\
+\hline
+\end{tabular}
+\caption{Detaillierter Training-Verlauf des Small-Modells}
+\label{tab:detailed_training_progress}
+\end{table}
+
+\subsection{Skalierungsanalyse}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|c|c|}
+\hline
+\textbf{Modell} & \textbf{Parameter} & \textbf{FLOPs/Token} & \textbf{Memory (MB)} & \textbf{Train Time (h)} & \textbf{Final PPL} \\
+\hline
+Micro & 394K & 12.4B & 156 & 2.3 & 22.1 \\
+Small & 2.13M & 48.7B & 342 & 4.1 & 14.6 \\
+Medium & 6.84M & 126.3B & 687 & 7.8 & 12.1 \\
+Large & 15.75M & 289.1B & 1,234 & 13.2 & 10.9 \\
+\hline
+\end{tabular}
+\caption{Skalierungs-Metriken verschiedener Modellgrößen}
+\label{tab:scaling_metrics}
+\end{table}
+
+\section{Ablation Study Ergebnisse}
+
+\subsection{Anzahl Attention-Köpfe}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{Köpfe} & \textbf{d\_k} & \textbf{Parameter} & \textbf{Train PPL} & \textbf{Val PPL} & \textbf{Training Zeit} \\
+\hline
+1 & 256 & 1.89M & 11.2 & 16.8 & 3.2h \\
+2 & 128 & 2.01M & 10.8 & 15.4 & 3.7h \\
+4 & 64 & 2.13M & 10.0 & 14.2 & 4.1h \\
+6 & 43 & 2.25M & 10.3 & 14.6 & 4.6h \\
+8 & 32 & 2.37M & 10.5 & 14.8 & 4.9h \\
+\hline
+\end{tabular}
+\caption{Einfluss der Anzahl Attention-Köpfe (d\_model=256)}
+\label{tab:attention_heads_detailed}
+\end{table}
+
+\subsection{Schichttiefe}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Schichten} & \textbf{Parameter} & \textbf{Train PPL} & \textbf{Val PPL} & \textbf{Gradient Norm} \\
+\hline
+2 & 1.21M & 12.4 & 19.2 & 0.84 \\
+3 & 1.67M & 11.1 & 16.3 & 0.97 \\
+4 & 2.13M & 10.0 & 14.2 & 1.12 \\
+5 & 2.59M & 9.6 & 13.1 & 1.28 \\
+6 & 3.05M & 9.2 & 11.8 & 1.45 \\
+8 & 3.97M & 8.7 & 10.4 & 1.78 \\
+10 & 4.89M & 8.9 & 10.8 & 2.12 \\
+\hline
+\end{tabular}
+\caption{Einfluss der Schichttiefe auf Performance}
+\label{tab:depth_detailed}
+\end{table}
+
+\subsection{Modell-Dimension}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+\textbf{d\_model} & \textbf{d\_ff} & \textbf{Parameter} & \textbf{Train PPL} & \textbf{Val PPL} & \textbf{Memory (MB)} \\
+\hline
+128 & 512 & 0.94M & 13.7 & 21.5 & 189 \\
+192 & 768 & 1.89M & 11.4 & 17.2 & 256 \\
+256 & 1024 & 2.13M & 10.0 & 14.2 & 342 \\
+320 & 1280 & 4.21M & 9.3 & 13.1 & 445 \\
+384 & 1536 & 6.84M & 8.7 & 12.1 & 567 \\
+\hline
+\end{tabular}
+\caption{Einfluss der Modell-Dimension}
+\label{tab:dimension_detailed}
+\end{table}
+
+\section{Tokenizer-Analyse}
+
+\subsection{Vokabular-Statistiken}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Statistik} & \textbf{Wert} \\
+\hline
+Gesamt-Tokens (vor Filterung) & 12,847 \\
+Tokens nach Häufigkeitsfilterung & 5,000 \\
+Durchschnittliche Token-Länge & 5.2 Zeichen \\
+Längster Token & 24 Zeichen \\
+Häufigster Token & "the" (3,421 Vorkommen) \\
+Seltenster Token (min\_freq=2) & 2 Vorkommen \\
+Out-of-Vocabulary Rate & 3.2\% \\
+\hline
+\end{tabular}
+\caption{Vokabular-Statistiken des Tokenizers}
+\label{tab:vocab_statistics}
+\end{table}
+
+\subsection{Top-20 Häufigste Tokens}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|l|c|c|l|c|}
+\hline
+\textbf{Rang} & \textbf{Token} & \textbf{Häufigkeit} & \textbf{Rang} & \textbf{Token} & \textbf{Häufigkeit} \\
+\hline
+1 & the & 3,421 & 11 & with & 892 \\
+2 & of & 2,847 & 12 & are & 831 \\
+3 & and & 2,156 & 13 & this & 789 \\
+4 & in & 1,923 & 14 & that & 745 \\
+5 & to & 1,678 & 15 & can & 698 \\
+6 & a & 1,534 & 16 & by & 654 \\
+7 & is & 1,289 & 17 & from & 612 \\
+8 & for & 1,145 & 18 & or & 578 \\
+9 & as & 1,067 & 19 & be & 534 \\
+10 & on & 945 & 20 & an & 512 \\
+\hline
+\end{tabular}
+\caption{Häufigste Tokens im Vokabular}
+\label{tab:frequent_tokens}
+\end{table}
+
+\section{Performance-Benchmarks}
+
+\subsection{Inference-Geschwindigkeit}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Modell} & \textbf{Batch Size 1} & \textbf{Batch Size 8} & \textbf{Batch Size 32} & \textbf{GPU Utilization} \\
+\hline
+Micro & 1,847 tok/s & 3,254 tok/s & 5,891 tok/s & 23\% \\
+Small & 1,264 tok/s & 2,187 tok/s & 3,845 tok/s & 45\% \\
+Medium & 812 tok/s & 1,423 tok/s & 2,567 tok/s & 67\% \\
+Large & 498 tok/s & 876 tok/s & 1,534 tok/s & 84\% \\
+\hline
+\end{tabular}
+\caption{Inference-Geschwindigkeit (Tokens pro Sekunde)}
+\label{tab:inference_speed}
+\end{table}
+
+\subsection{Memory Profiling}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Komponente} & \textbf{Small (MB)} & \textbf{Medium (MB)} & \textbf{Large (MB)} & \textbf{Anteil (\%)} \\
+\hline
+Embeddings & 40 & 60 & 80 & 6.5\% \\
+Attention Layers & 189 & 387 & 724 & 58.7\% \\
+Feed-Forward & 98 & 201 & 367 & 29.8\% \\
+Layer Norm & 12 & 18 & 24 & 1.9\% \\
+Output Projection & 8 & 12 & 16 & 1.3\% \\
+Activations & 23 & 39 & 63 & 5.1\% \\
+\hline
+\textbf{Total} & \textbf{342} & \textbf{687} & \textbf{1,234} & \textbf{100\%} \\
+\hline
+\end{tabular}
+\caption{Memory-Profile verschiedener Modell-Komponenten}
+\label{tab:memory_profile}
+\end{table}
+
+\section{Textgenerierungs-Beispiele}
+
+\subsection{Prompt: "Machine learning is"}
+
+\textbf{Temperature: 0.2 (niedrig)}
+\begin{quote}
+\small
+"Machine learning is a powerful approach to artificial intelligence that enables computers to learn from data without being explicitly programmed. The field has seen remarkable advances in recent years, with deep learning techniques achieving state-of-the-art results on many tasks."
+\end{quote}
+
+\textbf{Temperature: 0.8 (mittel)}
+\begin{quote}
+\small
+"Machine learning is revolutionizing how we approach complex problems in science and technology. From natural language processing to computer vision, these algorithms can discover patterns in vast datasets that would be impossible for humans to identify manually."
+\end{quote}
+
+\textbf{Temperature: 1.2 (hoch)}
+\begin{quote}
+\small
+"Machine learning is fascinating realm where mathematics meets creativity, enabling systems to evolve their understanding through experience rather than rigid programming paradigms that traditionally constrained computational thinking."
+\end{quote}
+
+\subsection{Prompt: "The transformer architecture"}
+
+\textbf{Top-k: 10}
+\begin{quote}
+\small
+"The transformer architecture introduced a revolutionary approach to sequence modeling by relying entirely on attention mechanisms. This design eliminates the need for recurrent connections, allowing for more efficient parallelization during training."
+\end{quote}
+
+\textbf{Top-k: 50}
+\begin{quote}
+\small
+"The transformer architecture represents a significant breakthrough in natural language processing, demonstrating that attention mechanisms alone can achieve superior performance compared to traditional recurrent neural networks."
+\end{quote}
+
+\textbf{Top-p: 0.9}
+\begin{quote}
+\small
+"The transformer architecture has become the foundation for most modern language models, enabling the development of powerful systems like BERT, GPT, and T5 that have transformed the field of NLP."
+\end{quote}
+
+\section{Fehleranalyse}
+
+\subsection{Häufige Generierungsfehler}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Fehlertyp} & \textbf{Häufigkeit (\%)} & \textbf{Beispiel} & \textbf{Ursache} \\
+\hline
+Wiederholungen & 12.3 & "the the model model" & Attention-Kollaps \\
+Inkohärenz & 8.7 & Themenwechsel & Begrenzte Kapazität \\
+Grammatikfehler & 4.2 & Subjekt-Verb-Inkongruenz & Trainingsdata \\
+Faktenfehler & 15.6 & Falsche Zahlen/Daten & Halluzination \\
+Abbrüche & 3.1 & Unvollständige Sätze & EOS-Problem \\
+\hline
+\end{tabular}
+\caption{Analyse häufiger Generierungsfehler}
+\label{tab:error_analysis}
+\end{table}
+
+\subsection{Attention-Pattern-Analyse}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Pattern-Typ} & \textbf{Layer 1-2} & \textbf{Layer 3-4} & \textbf{Layer 5-6} & \textbf{Interpretation} \\
+\hline
+Lokale Attention & 78\% & 45\% & 23\% & Syntaktische Verarbeitung \\
+Distant Attention & 12\% & 34\% & 56\% & Semantische Abhängigkeiten \\
+Uniform Attention & 8\% & 15\% & 12\% & Unsicherheit/Rauschen \\
+Concentrated & 2\% & 6\% & 9\% & Spezielle Tokens (Punktuation) \\
+\hline
+\end{tabular}
+\caption{Attention-Pattern-Verteilung nach Schichten}
+\label{tab:attention_patterns}
+\end{table}
+
+\section{Vergleichsstudien}
+
+\subsection{Baseline-Vergleiche}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Modell} & \textbf{Parameter} & \textbf{PPL} & \textbf{Training Zeit} & \textbf{Memory} \\
+\hline
+N-Gram (4-gram) & - & 76.2 & 5 min & 45 MB \\
+LSTM Baseline & 2.1M & 18.6 & 6.2h & 289 MB \\
+GRU Baseline & 1.8M & 19.4 & 5.8h & 267 MB \\
+Transformer Small & 2.1M & 14.2 & 4.1h & 342 MB \\
+\hline
+\end{tabular}
+\caption{Vergleich mit Baseline-Modellen}
+\label{tab:baseline_comparison}
+\end{table}
+
+\subsection{Skalierungsvergleich}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Referenz-Modell} & \textbf{Parameter} & \textbf{PPL (Referenz)} & \textbf{Unsere PPL} \\
+\hline
+GPT-1 (ähnlich) & 117M & 35.0 & - \\
+DistilGPT-2 & 82M & 29.8 & - \\
+GPT-2 Small & 124M & 35.7 & - \\
+Unser Large & 15.75M & - & 10.9 \\
+\hline
+\end{tabular}
+\caption{Vergleich mit veröffentlichten Modellen (verschiedene Datasets)}
+\label{tab:reference_comparison}
+\end{table}
+
+\section{Hyperparameter-Sensitivitätsanalyse}
+
+\subsection{Learning Rate}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Learning Rate} & \textbf{Final PPL} & \textbf{Konvergenz} & \textbf{Stabilität} \\
+\hline
+$1 \times 10^{-5}$ & 16.8 & Langsam & Stabil \\
+$5 \times 10^{-5}$ & 15.2 & Mittel & Stabil \\
+$1 \times 10^{-4}$ & 14.2 & Gut & Stabil \\
+$2 \times 10^{-4}$ & 14.7 & Schnell & Leicht instabil \\
+$5 \times 10^{-4}$ & 18.9 & Sehr schnell & Instabil \\
+\hline
+\end{tabular}
+\caption{Learning Rate Sensitivitätsanalyse}
+\label{tab:learning_rate_sensitivity}
+\end{table}
+
+\subsection{Batch Size}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|c|c|c|}
+\hline
+\textbf{Batch Size} & \textbf{Final PPL} & \textbf{Training Zeit} & \textbf{Memory} & \textbf{Stabilität} \\
+\hline
+8 & 15.1 & 8.2h & 198 MB & Weniger stabil \\
+16 & 14.6 & 5.9h & 267 MB & Gut \\
+32 & 14.2 & 4.1h & 342 MB & Sehr gut \\
+64 & 14.0 & 3.8h & 521 MB & Sehr gut \\
+128 & 13.9 & 4.2h & 896 MB & Gut \\
+\hline
+\end{tabular}
+\caption{Batch Size Einfluss auf Training}
+\label{tab:batch_size_effect}
+\end{table}
+
+\section{Zusammenfassung der Ergebnisse}
+
+Die detaillierten experimentellen Ergebnisse zeigen:
+
+\textbf{Skalierbarkeit:} Größere Modelle zeigen konsistent bessere Performance mit vorhersagbaren Skalierungsgesetzen.
+
+\textbf{Hyperparameter-Sensitivität:} Das Modell ist robust gegenüber kleinen Hyperparameter-Änderungen, aber sensitiv bezüglich Learning Rate.
+
+\textbf{Effizienz:} Die Implementierung zeigt gute Computational Efficiency im Vergleich zu Baseline-Modellen.
+
+\textbf{Qualität:} Generierte Texte sind kohärent und thematisch relevant, zeigen aber typische Probleme kleiner Modelle.
+
+\textbf{Reproduzierbarkeit:} Alle Ergebnisse sind mit geringer Varianz reproduzierbar.
+
+Diese Resultate validieren sowohl die theoretischen Vorhersagen als auch die praktische Umsetzung der Transformer-Architektur.

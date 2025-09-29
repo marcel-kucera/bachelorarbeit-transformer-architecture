@@ -1,0 +1,331 @@
+\chapter{Transformer-Varianten und Weiterentwicklungen}
+\label{ch:transformer_variants}
+
+\section{Einführung}
+
+Die ursprüngliche Transformer-Architektur von Vaswani et al. bildete den Grundstein für eine Vielzahl von spezialisierten Varianten, die für unterschiedliche Aufgaben und Anforderungen optimiert wurden. Diese Weiterentwicklungen lassen sich grob in drei Kategorien einteilen: reine Encoder-Modelle (wie BERT), reine Decoder-Modelle (wie GPT) und Encoder-Decoder-Modelle (wie T5). Jede Kategorie hat spezifische Stärken und eignet sich für verschiedene Anwendungsbereiche.
+
+\section{BERT: Bidirectional Encoder Representations from Transformers}
+
+BERT, entwickelt von Devlin et al. (2018) \cite{devlin2018bert}, revolutionierte das Verständnis kontextueller Wortrepräsentationen durch die Einführung bidirektionaler Kontextualisierung.
+
+\subsection{Architektur und Design-Prinzipien}
+
+BERT basiert ausschließlich auf dem Encoder-Teil der ursprünglichen Transformer-Architektur. Die Schlüsselinnovation liegt in der bidirektionalen Verarbeitung des Kontexts, im Gegensatz zu den unidirektionalen Ansätzen früherer Modelle.
+
+\textbf{Architektur-Spezifikationen:}
+\begin{itemize}
+    \item BERT-Base: 12 Schichten, 768 versteckte Dimensionen, 12 Attention-Köpfe, 110M Parameter
+    \item BERT-Large: 24 Schichten, 1024 versteckte Dimensionen, 16 Attention-Köpfe, 340M Parameter
+\end{itemize}
+
+\subsection{Pre-Training Strategien}
+
+BERT verwendet zwei innovative Pre-Training-Aufgaben:
+
+\textbf{Masked Language Modeling (MLM):}
+Zufällig ausgewählte Tokens (15\%) werden maskiert und das Modell lernt, diese vorherzusagen:
+
+\begin{equation}
+\mathcal{L}_{\text{MLM}} = -\mathbb{E}_{x \sim D} \left[ \sum_{i \in M} \log P(x_i | x_{\backslash M}) \right]
+\end{equation}
+
+wobei $M$ die Menge der maskierten Positionen und $x_{\backslash M}$ der Kontext ohne maskierte Tokens ist.
+
+\textbf{Next Sentence Prediction (NSP):}
+Das Modell lernt zu bestimmen, ob zwei Sätze aufeinanderfolgend sind:
+
+\begin{equation}
+\mathcal{L}_{\text{NSP}} = -\mathbb{E}_{(A,B)} \left[ y \log P(\text{IsNext} | A, B) + (1-y) \log P(\text{NotNext} | A, B) \right]
+\end{equation}
+
+\subsection{Fine-Tuning und Downstream-Aufgaben}
+
+BERT kann für verschiedene NLP-Aufgaben fine-getuned werden:
+
+\textbf{Klassifikation:} Das [CLS]-Token wird für Sequenz-Level-Klassifikation verwendet
+\textbf{Token-Level-Aufgaben:} Jede Position erhält eine spezifische Vorhersage (Named Entity Recognition)
+\textbf{Span-basierte Aufgaben:} Start- und End-Positionen werden vorhergesagt (Question Answering)
+
+\section{GPT: Generative Pre-trained Transformer}
+
+Die GPT-Familie, beginnend mit GPT-1 von Radford et al. (2018) \cite{radford2018improving}, fokussiert auf autoregressive Sprachmodellierung und Textgenerierung.
+
+\subsection{Autoregressive Sprachmodellierung}
+
+GPT basiert ausschließlich auf dem Decoder der Transformer-Architektur und verwendet Masked Self-Attention für autoregressive Generierung:
+
+\begin{equation}
+P(x_1, x_2, \ldots, x_n) = \prod_{i=1}^{n} P(x_i | x_1, x_2, \ldots, x_{i-1})
+\end{equation}
+
+\subsection{Entwicklung der GPT-Familie}
+
+\textbf{GPT-1 (2018):}
+\begin{itemize}
+    \item 12 Schichten, 768 Dimensionen, 117M Parameter
+    \item Unsupervised Pre-training + Supervised Fine-tuning
+\end{itemize}
+
+\textbf{GPT-2 (2019):}
+\begin{itemize}
+    \item Bis zu 48 Schichten, 1600 Dimensionen, 1.5B Parameter
+    \item Zero-shot Task Performance
+    \item Kontroverse um die Freigabe aufgrund möglichen Missbrauchs
+\end{itemize}
+
+\textbf{GPT-3 (2020):}
+\begin{itemize}
+    \item 96 Schichten, 12,288 Dimensionen, 175B Parameter
+    \item Few-shot In-Context Learning
+    \item Emergente Fähigkeiten bei Skalierung
+\end{itemize}
+
+\subsection{In-Context Learning}
+
+GPT-3 demonstrierte die Fähigkeit zum In-Context Learning ohne Parameterupdates:
+
+\begin{equation}
+P(y | x, \text{examples}) = P(y | x_1, y_1, x_2, y_2, \ldots, x_k, y_k, x)
+\end{equation}
+
+wobei $(x_i, y_i)$ Beispiel-Paare im Kontext sind.
+
+\section{T5: Text-to-Text Transfer Transformer}
+
+T5, entwickelt von Raffel et al. (2019) \cite{raffel2019exploring}, vereinheitlicht alle NLP-Aufgaben unter einem Text-zu-Text-Framework.
+
+\subsection{Text-zu-Text-Paradigma}
+
+Alle Aufgaben werden als Textgenerierung formuliert:
+\begin{itemize}
+    \item Translation: "translate English to German: Hello" → "Hallo"
+    \item Summarization: "summarize: [long text]" → "[summary]"
+    \item Classification: "sentiment: I love this movie" → "positive"
+\end{itemize}
+
+\subsection{Architectural Innovations}
+
+T5 kehrt zur ursprünglichen Encoder-Decoder-Architektur zurück, jedoch mit wichtigen Modifikationen:
+
+\textbf{Relative Position Embeddings:}
+Statt absoluter Positionen verwendet T5 relative Positional Bias:
+
+\begin{equation}
+\text{bias}_{i,j} = \text{Embedding}(\text{clamp}(j-i, -k, k))
+\end{equation}
+
+\textbf{Layer Normalization:}
+Pre-Normalization statt Post-Normalization für bessere Stabilität.
+
+\section{Optimierungen für Effizienz}
+
+Die quadratische Komplexität der Attention führte zur Entwicklung effizienter Transformer-Varianten.
+
+\subsection{Linformer}
+
+Linformer reduziert die Komplexität durch niedrig-rang Approximation der Attention-Matrix:
+
+\begin{equation}
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\left(\frac{\mathbf{Q}(\mathbf{E}\mathbf{K})^T}{\sqrt{d_k}}\right)(\mathbf{F}\mathbf{V})
+\end{equation}
+
+wobei $\mathbf{E}, \mathbf{F} \in \mathbb{R}^{k \times n}$ mit $k \ll n$.
+
+\subsection{Performer}
+
+Performer approximiert die Softmax-Attention durch Kernel-Methoden:
+
+\begin{equation}
+\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) \approx \frac{\phi(\mathbf{Q})(\phi(\mathbf{K})^T\mathbf{V})}{\phi(\mathbf{Q})\phi(\mathbf{K})^T\mathbf{1}}
+\end{equation}
+
+wobei $\phi$ eine Kernel-Feature-Map ist.
+
+\subsection{Sparse Attention Patterns}
+
+Verschiedene sparse Attention-Muster reduzieren die Komplexität:
+
+\textbf{Local Attention:} Jedes Token achtet nur auf lokale Nachbarn
+\textbf{Strided Attention:} Aufmerksamkeit in regelmäßigen Abständen
+\textbf{Random Attention:} Zufällige Verbindungen zwischen Tokens
+
+\section{Spezialisierte Transformer}
+
+\subsection{Vision Transformer (ViT)}
+
+ViT erweitert Transformer auf Bildverarbeitung durch Patch-basierte Tokenisierung:
+
+\begin{equation}
+\mathbf{x}_p = \text{Flatten}(\mathbf{x}_{p \times p}) \mathbf{E}
+\end{equation}
+
+wobei Bilder in Patches der Größe $p \times p$ unterteilt werden.
+
+\subsection{DETR: Detection Transformer}
+
+DETR wendet Transformer auf Objekterkennung an, indem es Object Queries verwendet:
+
+\begin{equation}
+\mathbf{o}_i = \text{Decoder}(\mathbf{q}_i, \text{Encoder}(\text{Image}))
+\end{equation}
+
+\subsection{Switch Transformer}
+
+Switch Transformer implementiert Mixture of Experts (MoE) für extreme Skalierung:
+
+\begin{equation}
+\text{MoE}(\mathbf{x}) = \sum_{i=1}^{N} G(\mathbf{x})_i \cdot E_i(\mathbf{x})
+\end{equation}
+
+wobei $G$ die Gating-Funktion und $E_i$ der $i$-te Experte ist.
+
+\section{Training-Optimierungen}
+
+\subsection{Mixed Precision Training}
+
+Verwendung von FP16 für Forward-Pass und FP32 für kritische Operationen:
+
+\begin{equation}
+\mathbf{W}_{t+1} = \mathbf{W}_t - \alpha \cdot \text{Scale}^{-1} \cdot \text{FP32}(\nabla \mathcal{L})
+\end{equation}
+
+\subsection{Gradient Checkpointing}
+
+Trade-off zwischen Speicher und Rechenzeit durch selektive Neuberechnung:
+
+\begin{equation}
+\text{Memory} = \mathcal{O}(\sqrt{N}) \text{ statt } \mathcal{O}(N)
+\end{equation}
+
+\subsection{DeepSpeed und Model Parallelism}
+
+Verteilung großer Modelle über multiple GPUs:
+\begin{itemize}
+    \item Data Parallelism: Verschiedene Batches auf verschiedenen GPUs
+    \item Model Parallelism: Verschiedene Schichten auf verschiedenen GPUs
+    \item Pipeline Parallelism: Überlappende Bearbeitung verschiedener Micro-Batches
+\end{itemize}
+
+\section{Evaluation und Metriken}
+
+\subsection{Intrinsic Evaluation}
+
+\textbf{Perplexity:} Maß für die Qualität der Sprachmodellierung
+\begin{equation}
+\text{PPL} = \exp\left(-\frac{1}{N}\sum_{i=1}^{N} \log P(w_i | w_{<i})\right)
+\end{equation}
+
+\textbf{BLEU Score:} Für maschinelle Übersetzung
+\begin{equation}
+\text{BLEU} = \text{BP} \cdot \exp\left(\sum_{n=1}^{N} w_n \log p_n\right)
+\end{equation}
+
+\subsection{Downstream Task Performance}
+
+\textbf{GLUE/SuperGLUE:} Benchmark-Suiten für natürliche Sprachverarbeitung
+\textbf{SQuAD:} Reading Comprehension
+\textbf{ImageNet:} Für Vision Transformer
+
+\section{Skalierungsgesetze}
+
+\subsection{Scaling Laws}
+
+Kaplan et al. (2020) etablierten empirische Skalierungsgesetze:
+
+\begin{equation}
+\mathcal{L}(N, D, C) = \left(\frac{N_c}{N}\right)^{\alpha_N} + \left(\frac{D_c}{D}\right)^{\alpha_D} + \left(\frac{C_c}{C}\right)^{\alpha_C}
+\end{equation}
+
+wobei $N$ die Anzahl Parameter, $D$ die Datensatzgröße und $C$ die Rechenleistung ist.
+
+\subsection{Emergente Fähigkeiten}
+
+Bestimmte Fähigkeiten emergieren erst bei kritischer Modellgröße:
+\begin{itemize}
+    \item Few-shot Learning (≈100B Parameter)
+    \item Chain-of-Thought Reasoning (≈10B Parameter)
+    \item Code Generation (≈1B Parameter)
+\end{itemize}
+
+\section{Aktuelle Entwicklungen}
+
+\subsection{ChatGPT und InstructGPT}
+
+Reinforcement Learning from Human Feedback (RLHF) für bessere Ausrichtung:
+
+\begin{equation}
+\mathcal{L}_{\text{RLHF}} = \mathbb{E}_{(x,y) \sim D} [r_\phi(x,y)] - \beta \text{KL}[\pi_\theta(y|x), \pi_{\text{ref}}(y|x)]
+\end{equation}
+
+\subsection{PaLM, Chinchilla, und Gopher}
+
+Neue Erkenntnisse über optimale Modellgröße vs. Trainingsdaten:
+\begin{itemize}
+    \item Chinchilla: 70B Parameter, 1.4T Tokens (compute-optimal)
+    \item PaLM: 540B Parameter, demonstriert Reasoning-Fähigkeiten
+    \item Gopher: 280B Parameter, fokussiert auf faktisches Wissen
+\end{itemize}
+
+\section{Herausforderungen und Limitationen}
+
+\subsection{Computational Requirements}
+
+Training großer Transformer erfordert erhebliche Ressourcen:
+\begin{itemize}
+    \item GPT-3: ≈3,640 PetaFLOP-days, ≈$4.6M Trainingskosten
+    \item PaLM: ≈2,500 PetaFLOP-days auf 6,144 TPU v4 Chips
+\end{itemize}
+
+\subsection{Environmental Impact}
+
+CO₂-Fußabdruck des Trainings großer Modelle:
+\begin{equation}
+\text{CO}_2 = \text{Energieverbrauch} \times \text{Carbon Intensity}
+\end{equation}
+
+\subsection{Bias und Fairness}
+
+Transformer können Bias aus Trainingsdaten verstärken:
+\begin{itemize}
+    \item Gender Bias in Wort-Assoziationen
+    \item Racial Bias in Sentiment-Klassifikation
+    \item Socioeconomic Bias in Text-Generierung
+\end{itemize}
+
+\section{Zukünftige Forschungsrichtungen}
+
+\subsection{Multimodale Transformer}
+
+Integration verschiedener Modalitäten:
+\begin{itemize}
+    \item CLIP: Bild-Text-Verständnis
+    \item DALL-E: Text-zu-Bild-Generierung
+    \item Flamingo: Few-shot Learning über Modalitäten
+\end{itemize}
+
+\subsection{Efficient Architectures}
+
+Fortsetzung der Effizienz-Forschung:
+\begin{itemize}
+    \item Mixture of Experts (MoE)
+    \item Retrieval-Augmented Generation (RAG)
+    \item Memory-Efficient Attention
+\end{itemize}
+
+\subsection{Reasoning und Planning}
+
+Verbesserung komplexer kognitiver Fähigkeiten:
+\begin{itemize}
+    \item Chain-of-Thought Prompting
+    \item Tool-augmented Learning
+    \item Multi-step Reasoning
+\end{itemize}
+
+\section{Zusammenfassung}
+
+Die Transformer-Architektur hat sich als äußerst flexibel und anpassungsfähig erwiesen. Von den ursprünglichen Encoder-Decoder-Modellen für maschinelle Übersetzung bis hin zu den heutigen Large Language Models mit hunderten von Milliarden Parametern zeigt die kontinuierliche Evolution der Transformer-Familie die fundamentale Bedeutung dieser Architektur für die moderne KI-Forschung.
+
+Die verschiedenen Spezialisierungen - von BERT's bidirektionaler Kontextualisierung über GPT's autoregressive Generierung bis hin zu T5's Text-zu-Text-Paradigma - demonstrieren die Vielseitigkeit des Attention-basierten Ansatzes. Gleichzeitig treiben Effizienz-Optimierungen und neue Training-Strategien die Grenzen dessen, was mit Transformer-Modellen möglich ist, kontinuierlich weiter.
+
+Die nächsten Kapitel werden zeigen, wie diese theoretischen Konzepte in einer praktischen Implementierung umgesetzt werden können und welche Erkenntnisse sich aus der experimentellen Evaluierung ergeben.

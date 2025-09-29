@@ -1,0 +1,52 @@
+\chapter{Einleitung}
+\label{ch:introduction}
+
+\section{Motivation und Problemstellung}
+
+Die Verarbeitung natürlicher Sprache (Natural Language Processing, NLP) hat in den letzten Jahren eine beispiellose Entwicklung durchlaufen. Während traditionelle Ansätze auf regelbasierten Systemen und später auf statistischen Modellen basierten, führte die Einführung von Deep Learning zu einem Paradigmenwechsel im Bereich der Sprachverarbeitung. Insbesondere die Entwicklung der Transformer-Architektur im Jahr 2017 durch Vaswani et al. \cite{vaswani2017attention} markierte einen Wendepunkt, der die Grundlage für die heutigen hochleistungsfähigen Large Language Models (LLMs) wie GPT, BERT und T5 schuf.
+
+Die traditionellen Ansätze zur Sequenzmodellierung, insbesondere Recurrent Neural Networks (RNNs) und Long Short-Term Memory Networks (LSTMs), wiesen fundamentale Limitationen auf. Die sequenzielle Natur dieser Architekturen verhinderte eine effiziente Parallelisierung während des Trainings und führte zu Problemen bei der Verarbeitung langer Sequenzen aufgrund des Vanishing-Gradient-Problems. Darüber hinaus erschwerte die inhärente Rekursion das Lernen von langreichweitigen Abhängigkeiten in Texten.
+
+Die Transformer-Architektur adressiert diese Herausforderungen durch eine fundamentale Neukonzeption der Sequenzmodellierung. Anstatt auf Rekursion zu setzen, basiert der Ansatz vollständig auf Attention-Mechanismen, die es ermöglichen, direkte Verbindungen zwischen allen Positionen in einer Sequenz herzustellen. Diese Innovation ermöglicht nicht nur eine effiziente Parallelisierung, sondern auch eine verbesserte Modellierung komplexer sprachlicher Strukturen und Abhängigkeiten.
+
+\section{Zielsetzung der Arbeit}
+
+Das primäre Ziel dieser Bachelorarbeit ist die umfassende Darstellung der Transformer-Architektur von den theoretischen Grundlagen bis zur praktischen Implementierung. Die Arbeit verfolgt zunächst eine systematische Erläuterung der mathematischen Grundlagen der Attention-Mechanismen und der Transformer-Architektur, wobei zentrale Formeln wie die Scaled Dot-Product Attention mathematisch hergeleitet und algorithmisch erklärt werden. Diese theoretische Fundierung bildet die Basis für eine detaillierte Analyse der verschiedenen Komponenten des Transformer-Modells, ihrer Funktionsweise und ihres Zusammenspiels im Gesamtsystem.
+
+Aufbauend auf dem theoretischen Verständnis erfolgt die Entwicklung einer vollständigen Implementierung eines kleinen, aber funktionsfähigen Large Language Models unter Verwendung moderner Deep Learning Frameworks wie PyTorch. Diese praktische Umsetzung ermöglicht nicht nur das tiefe Verständnis der algorithmischen Details, sondern auch die experimentelle Validierung der theoretischen Konzepte durch konkrete Experimente zur Bewertung der Leistungsfähigkeit des implementierten Modells.
+
+Die Analyse der experimentellen Ergebnisse im Kontext der theoretischen Erkenntnisse mündet schließlich in eine kritische Bewertung der Stärken und Schwächen der Transformer-Architektur sowie das Aufzeigen von Entwicklungsrichtungen und zukünftigen Forschungsfeldern. Diese ganzheitliche Herangehensweise verbindet mathematische Rigorosität mit praktischer Anwendbarkeit und schafft eine Brücke zwischen theoretischem Verständnis und realer Implementierung.
+
+\section{Methodische Herangehensweise}
+
+Die methodische Herangehensweise dieser Arbeit folgt einem systematischen Ansatz, der theoretische Fundierung mit praktischer Umsetzung verbindet. Zunächst erfolgt eine umfassende Analyse der relevanten wissenschaftlichen Literatur, beginnend mit den grundlegenden Arbeiten zu neuronalen Netzwerken und Attention-Mechanismen bis hin zu den neuesten Entwicklungen im Bereich der Transformer-Modelle. Diese Literaturrecherche und theoretische Analyse schafft das wissenschaftliche Fundament für alle nachfolgenden Arbeitsschritte.
+
+Die theoretischen Konzepte werden anschließend mathematisch formalisiert und in ihrer Komplexität schrittweise aufgebaut, wobei besondere Aufmerksamkeit der Herleitung und Erläuterung der zentralen Algorithmen gewidmet wird. Die mathematische Modellierung dient nicht nur der präzisen Beschreibung der Architektur, sondern auch als Grundlage für die nachfolgende Implementierung.
+
+Die praktische Umsetzung erfolgt unter Verwendung des PyTorch-Frameworks, wobei alle wichtigen Komponenten der Transformer-Architektur von Grund auf implementiert werden. Diese Implementierung und Entwicklung ermöglicht ein tiefes Verständnis der algorithmischen Details und bildet die Basis für die experimentelle Validierung. Das implementierte Modell wird auf verschiedenen Aufgaben getestet und evaluiert, wobei die Ergebnisse sowohl quantitativ als auch qualitativ analysiert und im Kontext der theoretischen Vorhersagen diskutiert werden.
+
+\section{Struktur der Arbeit}
+
+Die vorliegende Arbeit ist in acht Kapitel gegliedert, die eine logische Progression von den theoretischen Grundlagen zur praktischen Anwendung verfolgen. Kapitel 2 legt die mathematischen und konzeptionellen Grundlagen für das Verständnis der Transformer-Architektur, behandelt die Entwicklung neuronaler Netzwerke, die Problematik sequenzieller Modelle und führt in die Attention-Mechanismen ein. Das darauf folgende Kapitel 3 stellt das Herzstück der Arbeit dar und behandelt die Transformer-Architektur im Detail, wobei alle wichtigen Komponenten wie Multi-Head Attention, Positional Encoding und Feed-Forward Networks mathematisch hergeleitet und erläutert werden.
+
+Kapitel 4 erweitert die Diskussion um wichtige Varianten und Weiterentwicklungen der ursprünglichen Transformer-Architektur, einschließlich BERT, GPT und T5, und analysiert deren spezifische Eigenschaften und Anwendungsbereiche. Die praktische Wendung erfolgt in Kapitel 5, das die Implementierung eines eigenen Transformer-basierten Language Models dokumentiert und Design-Entscheidungen sowie die Implementierung der einzelnen Komponenten detailliert beschreibt.
+
+Die experimentelle Validierung wird in Kapitel 6 präsentiert, das die experimentellen Ergebnisse und deren Analyse behandelt und verschiedene Metriken zur Bewertung der Leistungsfähigkeit des implementierten Modells verwendet. Kapitel 7 diskutiert die Ergebnisse im breiteren Kontext der aktuellen Forschung, identifiziert Limitationen der Arbeit und zeigt Richtungen für zukünftige Forschung auf. Das abschließende Kapitel 8 fasst die wichtigsten Erkenntnisse zusammen und zieht Schlussfolgerungen aus der theoretischen und praktischen Arbeit.
+
+\section{Abgrenzung und Limitation}
+
+Diese Arbeit konzentriert sich auf die Transformer-Architektur als fundamentale Innovation im Bereich der neuronalen Sprachverarbeitung. Aufgrund des begrenzten Umfangs einer Bachelorarbeit werden einige verwandte Themenbereiche nur am Rande behandelt oder bewusst ausgeschlossen:
+
+Die Implementierung beschränkt sich auf ein relativ kleines Modell, das auf verfügbarer Hardware trainiert werden kann. Skalierungseffekte und die Herausforderungen beim Training sehr großer Modelle werden primär theoretisch behandelt.
+
+Spezielle Anwendungen der Transformer-Architektur außerhalb der natürlichen Sprachverarbeitung, wie etwa in der Bildverarbeitung (Vision Transformers) oder anderen Domänen, werden nicht betrachtet.
+
+Die ethischen und gesellschaftlichen Implikationen von Large Language Models werden nur kurz angesprochen, da diese Thematik den Rahmen einer technischen Abschlussarbeit übersteigen würde.
+
+\section{Erwartete Beiträge}
+
+Diese Arbeit leistet mehrere Beiträge zum Verständnis und zur praktischen Anwendung der Transformer-Architektur. Zunächst bietet sie eine systematische und umfassende Darstellung der theoretischen Grundlagen der Transformer-Architektur auf Deutsch, die als Referenz für Studierende und Forscher dienen kann und eine wichtige deutschsprachige Ressource in diesem Forschungsbereich darstellt. Darüber hinaus stellt die Arbeit eine vollständige, gut dokumentierte Implementierung eines Transformer-basierten Language Models zur Verfügung, die als Lernressource und Ausgangspunkt für weitere Entwicklungen verwendet werden kann.
+
+Die experimentelle Analyse bietet praktische Einblicke in das Verhalten und die Leistungsfähigkeit von Transformer-Modellen in verschiedenen Szenarien und trägt damit zum empirischen Verständnis dieser Architektur bei. Schließlich liefert die Arbeit eine kritische Bewertung der aktuellen Entwicklungen und eine Einordnung in den größeren Kontext der KI-Forschung, was für die wissenschaftliche Diskussion und weitere Forschungsrichtungen von Bedeutung ist.
+
+Die Kombination aus theoretischer Tiefe und praktischer Umsetzung macht diese Arbeit zu einer wertvollen Ressource für alle, die ein fundiertes Verständnis der Transformer-Architektur entwickeln möchten. Durch die Verbindung mathematischer Rigorosität mit experimenteller Validierung schafft sie eine Brücke zwischen akademischer Theorie und praktischer Anwendung, die sowohl für Lehrende als auch für Forschende von Nutzen ist.
