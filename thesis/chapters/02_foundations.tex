@@ -66,17 +66,13 @@ wobei $\mathbf{h}_t$ der versteckte Zustand zum Zeitpunkt $t$, $\mathbf{x}_t$ di
 
 \subsection{Probleme traditioneller RNNs}
 
-RNNs leiden unter mehreren fundamentalen Problemen:
-
-\textbf{Vanishing Gradient Problem}: Bei der Backpropagation durch Zeit können Gradienten exponentiell abnehmen, was das Lernen langreichweitiger Abhängigkeiten verhindert. Mathematisch lässt sich dies durch die wiederholte Multiplikation der Gewichtsmatrix $\mathbf{W}_{hh}$ erklären:
+RNNs leiden unter mehreren fundamentalen Problemen, die ihre praktische Anwendbarkeit einschränken. Das bedeutendste ist das Vanishing Gradient Problem, bei dem Gradienten während der Backpropagation durch Zeit exponentiell abnehmen, was das Lernen langreichweitiger Abhängigkeiten verhindert. Mathematisch lässt sich dies durch die wiederholte Multiplikation der Gewichtsmatrix $\mathbf{W}_{hh}$ erklären, wodurch sich kleine Eigenwerte potenzieren und zu verschwindend kleinen Gradienten führen.
 
 \begin{equation}
 \frac{\partial \mathbf{h}_t}{\partial \mathbf{h}_{t-k}} = \prod_{i=1}^{k} \frac{\partial \mathbf{h}_{t-i+1}}{\partial \mathbf{h}_{t-i}} = \prod_{i=1}^{k} \text{diag}(f'(\cdot)) \mathbf{W}_{hh}
 \end{equation}
 
-\textbf{Exploding Gradient Problem}: Umgekehrt können Gradienten auch explodieren, wenn die Eigenwerte von $\mathbf{W}_{hh}$ zu groß sind.
-
-\textbf{Sequenzielle Verarbeitung}: RNNs können nicht parallelisiert werden, da $\mathbf{h}_t$ von $\mathbf{h}_{t-1}$ abhängt.
+Umgekehrt können Gradienten auch explodieren, wenn die Eigenwerte von $\mathbf{W}_{hh}$ zu groß sind, was zu instabilen Trainingsverläufen führt. Ein weiteres grundlegendes Problem liegt in der sequenziellen Verarbeitung, da $\mathbf{h}_t$ von $\mathbf{h}_{t-1}$ abhängt und somit keine Parallelisierung der Berechnungen möglich ist, was die Trainingszeiten erheblich verlängert.
 
 \subsection{Long Short-Term Memory (LSTM)}
 
@@ -103,13 +99,7 @@ Das Grundprinzip der Attention basiert auf der Idee, dass nicht alle Teile der E
 \text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \sum_{i=1}^{n} \alpha_i \mathbf{v}_i
 \end{equation}
 
-wobei:
-\begin{itemize}
-    \item $\mathbf{Q}$ (Query) die Anfrage repräsentiert
-    \item $\mathbf{K} = [\mathbf{k}_1, \mathbf{k}_2, \ldots, \mathbf{k}_n]$ die Schlüssel
-    \item $\mathbf{V} = [\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n]$ die Werte
-    \item $\alpha_i$ die Attention-Gewichte sind
-\end{itemize}
+wobei $\mathbf{Q}$ (Query) die Anfrage repräsentiert, $\mathbf{K} = [\mathbf{k}_1, \mathbf{k}_2, \ldots, \mathbf{k}_n]$ die Schlüssel, $\mathbf{V} = [\mathbf{v}_1, \mathbf{v}_2, \ldots, \mathbf{v}_n]$ die Werte und $\alpha_i$ die Attention-Gewichte sind. Diese Notation entspricht der intuitiven Vorstellung einer Datenbankabfrage, bei der die Query bestimmt, welche Informationen (Values) basierend auf der Ähnlichkeit zu den Keys abgerufen werden.
 
 \subsection{Berechnung der Attention-Gewichte}
 

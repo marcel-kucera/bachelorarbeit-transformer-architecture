@@ -272,15 +272,9 @@ Während der Inferenz muss autoregressiv generiert werden: Jedes neue Token wird
 
 \subsection{Zeitkomplexität}
 
-Die Zeitkomplexität verschiedener Operationen im Transformer:
+Die Zeitkomplexität verschiedener Operationen im Transformer zeigt unterschiedliche Skalierungsverhalten abhängig von der Sequenzlänge $n$ und der Modeldimension $d$. Die Self-Attention Operation weist eine Komplexität von $\mathcal{O}(n^2 \cdot d)$ auf, da jede Position mit jeder anderen Position interagiert und diese Berechnungen über alle Dimensionen durchgeführt werden müssen. Die Feed-Forward Networks hingegen haben eine Komplexität von $\mathcal{O}(n \cdot d^2)$, da sie auf jede Position separat angewendet werden, aber die Matrixmultiplikationen zwischen den Dimensionen dominieren.
 
-\begin{itemize}
-    \item Self-Attention: $\mathcal{O}(n^2 \cdot d)$
-    \item Feed-Forward: $\mathcal{O}(n \cdot d^2)$
-    \item Gesamt pro Schicht: $\mathcal{O}(n^2 \cdot d + n \cdot d^2)$
-\end{itemize}
-
-Für lange Sequenzen ($n > d$) dominiert die quadratische Komplexität der Self-Attention.
+Die Gesamtkomplexität pro Transformer-Schicht beträgt somit $\mathcal{O}(n^2 \cdot d + n \cdot d^2)$. Für lange Sequenzen mit $n > d$ dominiert die quadratische Komplexität der Self-Attention, was zu erheblichen Skalierungsproblemen bei sehr langen Eingabesequenzen führt.
 
 \subsection{Speicherkomplexität}
 
@@ -290,21 +284,15 @@ Die Speicherkomplexität ist ebenfalls quadratisch in der Sequenzlänge aufgrund
 
 \subsection{Vorteile}
 
-\begin{itemize}
-    \item \textbf{Parallelisierbarkeit}: Alle Positionen können gleichzeitig verarbeitet werden
-    \item \textbf{Langreichweitige Abhängigkeiten}: Direkte Verbindungen zwischen allen Positionen
-    \item \textbf{Interpretierbarkeit}: Attention-Gewichte bieten Einblicke in Modellentscheidungen
-    \item \textbf{Flexibilität}: Anpassbar für verschiedene Aufgaben und Modalitäten
-\end{itemize}
+Die Transformer-Architektur bietet mehrere fundamentale Vorteile gegenüber traditionellen sequenziellen Modellen. Die wichtigste Eigenschaft ist die vollständige Parallelisierbarkeit, da alle Positionen einer Sequenz gleichzeitig verarbeitet werden können, ohne auf vorherige Berechnungen warten zu müssen. Dies führt zu erheblichen Beschleunigungen beim Training im Vergleich zu rekurrenten Netzwerken.
+
+Ein weiterer bedeutender Vorteil liegt in der direkten Modellierung langreichweitiger Abhängigkeiten durch direkte Verbindungen zwischen allen Positionen in der Sequenz, wodurch das Vanishing Gradient Problem umgangen wird. Die Attention-Gewichte bieten zudem eine natürliche Interpretierbarkeit, da sie explizit zeigen, welche Teile der Eingabe für bestimmte Vorhersagen relevant sind. Schließlich erweist sich die Architektur als hochflexibel und anpassbar für verschiedene Aufgaben und Modalitäten, von Sprachverarbeitung bis hin zu Computer Vision.
 
 \subsection{Limitationen}
 
-\begin{itemize}
-    \item \textbf{Quadratische Komplexität}: Skalierung zu langen Sequenzen ist problematisch
-    \item \textbf{Speicherverbrauch}: Große Attention-Matrizen
-    \item \textbf{Positionelle Limitationen}: Schwierigkeiten mit sehr langen Sequenzen
-    \item \textbf{Inductive Bias}: Weniger strukturierte Annahmen als CNNs oder RNNs
-\end{itemize}
+Trotz der bedeutenden Vorteile weist die Transformer-Architektur auch wichtige Limitationen auf. Die quadratische Komplexität der Self-Attention macht die Skalierung zu sehr langen Sequenzen problematisch, da sowohl Rechenzeit als auch Speicherbedarf quadratisch mit der Sequenzlänge wachsen. Der hohe Speicherverbrauch durch große Attention-Matrizen begrenzt die praktische Anwendbarkeit bei ressourcenbeschränkten Systemen.
+
+Positionelle Limitationen entstehen bei sehr langen Sequenzen, da die ursprünglichen Positional Encodings für extreme Längen nicht optimal funktionieren. Ein weiterer konzeptioneller Nachteil liegt im geringeren Inductive Bias im Vergleich zu CNNs oder RNNs, die durch ihre Architektur bereits bestimmte strukturelle Annahmen über die Daten einbauen, während Transformer diese Strukturen vollständig aus den Daten lernen müssen.
 
 \section{Zusammenfassung}
 

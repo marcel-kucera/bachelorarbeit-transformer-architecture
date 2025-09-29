@@ -5,14 +5,7 @@
 
 Dieses Kapitel dokumentiert die praktische Implementierung eines funktionsfähigen Large Language Models basierend auf der Transformer-Architektur. Die Implementierung erfolgt in Python unter Verwendung des PyTorch-Frameworks und demonstriert die praktische Umsetzung der in den vorherigen Kapiteln behandelten theoretischen Konzepte.
 
-Die Zielsetzung der Implementierung umfasst:
-\begin{itemize}
-    \item Vollständige Umsetzung aller wesentlichen Komponenten der Transformer-Architektur
-    \item Modularere und erweiterbare Code-Struktur für weitere Experimente
-    \item Effiziente Implementierung für Training und Inferenz
-    \item Ausführliche Dokumentation zur Nachvollziehbarkeit
-    \item Experimentelle Validierung der theoretischen Konzepte
-\end{itemize}
+Die Zielsetzung der Implementierung umfasst zunächst die vollständige Umsetzung aller wesentlichen Komponenten der Transformer-Architektur in einer modularen und erweiterbaren Code-Struktur, die weitere Experimente erleichtert. Dabei wird besonderer Wert auf eine effiziente Implementierung für Training und Inferenz gelegt, die sowohl Speicherverbrauch als auch Rechenzeit optimiert. Eine ausführliche Dokumentation zur Nachvollziehbarkeit aller Implementierungsschritte bildet die Grundlage für die experimentelle Validierung der theoretischen Konzepte.
 
 \section{Systemarchitektur und Design-Entscheidungen}
 
@@ -20,35 +13,13 @@ Die Implementierung folgt einer modularen Architektur, die eine klare Trennung z
 
 \subsection{Modulare Struktur}
 
-\textbf{Kernmodelle (src/models/):}
-\begin{itemize}
-    \item \texttt{transformer.py}: Vollständige Encoder-Decoder Transformer-Implementierung
-    \item \texttt{language\_model.py}: GPT-ähnliches Decoder-only Language Model
-\end{itemize}
-
-\textbf{Hilfsfunktionen (src/utils/):}
-\begin{itemize}
-    \item \texttt{tokenizer.py}: Einfacher Tokenizer für Textverarbeitung
-    \item \texttt{data\_loader.py}: Datenlade- und Verarbeitungsfunktionen
-\end{itemize}
-
-\textbf{Training (src/training/):}
-\begin{itemize}
-    \item \texttt{trainer.py}: Training-Loop und Evaluierungsfunktionen
-    \item \texttt{optimizer.py}: Optimierungsstrategien und Scheduler
-\end{itemize}
+Die Kernmodelle befinden sich im Verzeichnis \texttt{src/models/} und umfassen \texttt{transformer.py} für die vollständige Encoder-Decoder Transformer-Implementierung sowie \texttt{language\_model.py} für das GPT-ähnliche Decoder-only Language Model. Die Hilfsfunktionen in \texttt{src/utils/} stellen mit \texttt{tokenizer.py} einen einfachen Tokenizer für Textverarbeitung und mit \texttt{data\_loader.py} Datenlade- und Verarbeitungsfunktionen bereit. Das Training-System in \texttt{src/training/} enthält \texttt{trainer.py} für Training-Loop und Evaluierungsfunktionen sowie \texttt{optimizer.py} für Optimierungsstrategien und Scheduler.
 
 \subsection{Design-Prinzipien}
 
-Die Implementierung folgt mehreren wichtigen Design-Prinzipien:
+Die Implementierung folgt mehreren wichtigen Design-Prinzipien, die eine hohe Code-Qualität und Wartbarkeit gewährleisten. Das Prinzip der Modularität stellt sicher, dass jede Komponente als eigenständiges Modul implementiert ist, das unabhängig getestet und modifiziert werden kann, wodurch eine klare Trennung der Verantwortlichkeiten erreicht wird. Die Erweiterbarkeit der Architektur ermöglicht einfache Erweiterungen und Modifikationen für experimentelle Zwecke, ohne bestehende Funktionalitäten zu beeinträchtigen.
 
-\textbf{Modularität:} Jede Komponente ist als eigenständiges Modul implementiert, das unabhängig getestet und modifiziert werden kann.
-
-\textbf{Erweiterbarkeit:} Die Architektur ermöglicht einfache Erweiterungen und Modifikationen für experimentelle Zwecke.
-
-\textbf{Effizienz:} Optimierungen für sowohl Speicherverbrauch als auch Rechenzeit, einschließlich der Verwendung von Mixed Precision Training.
-
-\textbf{Reproduzierbarkeit:} Alle Hyperparameter und Zufallsseeds werden dokumentiert und kontrolliert.
+Besondere Aufmerksamkeit wird der Effizienz gewidmet, wobei Optimierungen für sowohl Speicherverbrauch als auch Rechenzeit implementiert werden, einschließlich der Verwendung von Mixed Precision Training für moderne GPU-Architekturen. Die Reproduzierbarkeit aller Experimente wird durch explizite Kontrolle aller Zufallsseeds und die vollständige Dokumentation aller Hyperparameter sichergestellt.
 
 \section{Implementierung der Attention-Mechanismen}
 
