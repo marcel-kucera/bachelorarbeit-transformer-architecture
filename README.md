@@ -1,3 +1,5 @@
+ICH HOFFE ES IST OFFENSICHTLICH, DASS DAS NICHT MEINE ECHTE BACHELORARBEIT IST UND ICH HIER NUR BISSCHEN SPAẞ MIT DEM CHATBOT HATTE
+
 # Bachelorarbeit: Transformer-Architektur
 
 ## Theoretische Grundlagen und praktische Implementierung eines Large Language Models
